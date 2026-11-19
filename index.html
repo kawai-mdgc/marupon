@@ -213,13 +213,13 @@ function moveEntity(e,isPlayer){
 
 // ---------- state ----------
 let state='title';
-let player,cam={x:0},lives=5,coins=0,score=0,checkX=null,shake=0,winT=0,frame=0,bannerT=0,sel=1;
+let player,cam={x:0},lives=5,coins=0,score=0,checkX=null,checkPow=0,shake=0,winT=0,frame=0,bannerT=0,sel=1;
 let particles=[],texts=[],bumps={},titleChoice=null;
 const rnd=(a,b)=>a+Math.random()*(b-a);
 
 // ---- セーブ (ブラウザに保存) ----
 const PROG_KEY='marupon-prog-v2';
-let prog={unlocked:1,cleared:{},coins:0,score:0,stage:null,checkX:null};
+let prog={unlocked:1,cleared:{},coins:0,score:0,stage:null,checkX:null,pow:0};
 function loadProg(){try{const s=JSON.parse(localStorage.getItem(PROG_KEY));if(s&&typeof s.unlocked==='number')prog=Object.assign(prog,s)}catch(e){}}
 function saveProg(){prog.coins=coins;prog.score=score;try{localStorage.setItem(PROG_KEY,JSON.stringify(prog))}catch(e){}}
 loadProg();
@@ -232,11 +232,13 @@ function newPlayer(x){
 function startStage(n,mode){
   curStage=n;revealed.clear();lives=5;coins=prog.coins;score=prog.score;
   checkX=(mode==='cont'&&prog.stage===n&&typeof prog.checkX==='number')?prog.checkX:null;
+  checkPow=checkX!==null?(prog.pow|0):0;
   bannerT=150;loadLevel();state='play';sfx.coin();
 }
 function loadLevel(){
   buildLevel(); particles=[];texts=[];bumps={};winT=0;titleChoice=null;
   player=newPlayer(checkX!==null?checkX:2*T);
+  if(checkX!==null&&checkPow>0){const p=player;p.y-=12;p.h=40;p.x-=1;p.w=26;p.big=true;p.fire=checkPow>1}
   cam.x=Math.max(0,Math.min(player.x-W*0.35,COLS*T-W));
 }
 function rectFree(x,y,w,h){
@@ -378,7 +380,7 @@ function updatePlayer(){
   }
   const ice=TH.ice&&!p.ride;
   const dir=(keys.right?1:0)-(keys.left?1:0);
-  const maxv=(keys.run?4.6:3.2)*(p.star>0?1.15:1), acc=p.onGround?(ice?.16:.45):.3;
+  const maxv=(keys.run?5:3.8)*(p.star>0?1.15:1), acc=p.onGround?(ice?.16:.45):.3;
   if(dir){
     if(Math.sign(p.vx)!==dir&&p.vx!==0)p.vx+=dir*(ice&&p.onGround?.08:.35); // turn-around
     p.vx+=dir*acc; p.vx=Math.max(-maxv,Math.min(maxv,p.vx)); p.face=dir;
@@ -394,7 +396,7 @@ function updatePlayer(){
   p.jbuf=keys.jumpPressed?7:p.jbuf-1;
   p.coyote=p.onGround?6:p.coyote-1;
   if(p.jbuf>0&&p.coyote>0){
-    p.vy=-11.3-Math.abs(p.vx)*.2;p.jbuf=0;p.coyote=0;p.onGround=false;p.ride=null;
+    p.vy=-12-Math.abs(p.vx)*.2;p.jbuf=0;p.coyote=0;p.onGround=false;p.ride=null;
     p.sx=.72;p.sy=1.35;sfx.jump();puff(p.x+p.w/2,p.y+p.h,5);
   }
   if(!keys.jump&&p.vy<-4)p.vy=-4;
@@ -474,7 +476,7 @@ function updateEnts(){
       const pcx=p.x+p.w/2;
       if(e.st===0&&!p.dead&&Math.abs(pcx-(e.x+T/2))<46&&p.y+p.h<=GY*T+2){e.st=1;sfx.boom();shake=4}
       if(e.st===1&&e.h<30)e.h=Math.min(30,e.h+6);
-      if(e.h>6&&!p.dead&&!p.win&&overlap(p,{x:e.x+5,y:e.y-e.h,w:T-10,h:e.h}))hurt();
+      if(e.h>6&&!p.dead&&!p.win&&overlap(p,{x:e.x+8,y:e.y-e.h+6,w:T-16,h:Math.max(0,e.h-6)}))hurt();
     }else if(e.t==='thwomp'){
       const cx=e.x+e.w/2,pcx=p.x+p.w/2,rest=GY*T-e.h;
       if(e.st===0&&!p.dead&&Math.abs(cx-pcx)<40){e.st=1;e.vy=0}
@@ -484,8 +486,8 @@ function updateEnts(){
       if(!p.dead&&!p.win&&overlap(p,{x:e.x+3,y:e.y+3,w:e.w-6,h:e.h-4}))hurt();
     }else if(e.t==='check'){
       if(!e.done&&p.x+p.w>e.x+10){
-        e.done=true;checkX=e.x;prog.stage=curStage;prog.checkX=e.x;saveProg();
-        sfx.check();addText(e.x+16,e.y-10,'チェックポイント!','#ff8aa8');sparkle(e.x+16,e.y);
+        e.done=true;checkX=e.x;checkPow=p.big?(p.fire?2:1):0;prog.stage=curStage;prog.checkX=e.x;prog.pow=checkPow;saveProg();
+        sfx.check();addText(e.x+16,e.y-10,checkPow?'チェックポイント! (大きさキープ)':'チェックポイント!','#ff8aa8');sparkle(e.x+16,e.y);
       }
     }
   }

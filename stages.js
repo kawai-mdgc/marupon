@@ -67,7 +67,7 @@ const STAGES=[
   L.flat(14); L.check(1); L.hopper(6); L.walker(11); L.pipe(8,2);
   L.flat(14); L.thwomp(7); L.row(2,8,'BMB'); L.coins(5,10,3);
   L.gap(3); L.arc(0,9,3);
-  L.flat(16); L.spikes(4,3); L.arc(3,8,5); L.hopper(9); L.walker(13);
+  L.flat(16); L.spikes(4,3); L.arc(3,8,5); L.hopper(11); L.walker(14);
   L.gap(5); L.plat(1,10,1); L.plat(3,9,1);
   L.flat(14); L.hopper(5); L.hopper(10); L.spike(8);
   L.flat(8); L.thwomp(4); L.walker(6);
@@ -79,7 +79,7 @@ const STAGES=[
   L.flat(14); L.thwomp(5); L.thwomp(11); L.row(2,8,'?M?');
   L.gap(3); L.row(1,8,'H');
   L.flat(16); L.check(1); L.stairs(3,5,true); L.stairs(8,5,false); L.coins(4,6,7);
-  L.flat(14); L.spikes(3,3); L.arc(2,8,5); L.hopper(8); L.walker(11); L.row(10,8,'S');
+  L.flat(14); L.spikes(3,3); L.arc(2,8,5); L.hopper(10); L.walker(13); L.row(10,8,'S');
   L.gap(4); L.plat(1,9,2);
   L.flat(14); L.spike(4); L.spike(7); L.thwomp(10);
   L.gap(5); L.plat(1,10,1); L.plat(3,9,1);
@@ -144,7 +144,7 @@ const STAGES=[
   L.gap(8); L.drop(1,11); L.drop(4,11);
   L.flat(12); L.check(1); L.hopper(6); L.flyer(9,8,3); L.row(3,8,'?M?');
   L.gap(9); L.liftH(10,.04); L.flyer(3,8,3);
-  L.flat(14); L.spikes(3,3); L.hopper(8); L.walker(11);
+  L.flat(14); L.spikes(3,3); L.hopper(10); L.walker(13);
   L.gap(8); L.liftV(2,10,1.5,.045);
   L.flat(12); L.check(1); L.flyer(4,8,3); L.flyer(8,9,3); L.row(5,8,'S');
   L.gap(7); L.drop(1,10); L.drop(4,11);
@@ -158,7 +158,7 @@ const STAGES=[
  // 9 ------------------------------------------------ トゲ・石・ぴょんぴょん
  {name:'どうくつ',theme:'cave',build(L){
   L.flat(10); L.hopper(7);
-  L.flat(14); L.spikes(3,3); L.spikes(9,3); L.arc(3,7,4); L.arc(9,7,4);
+  L.flat(17); L.spikes(3,3); L.spikes(9,3); L.arc(3,7,4); L.arc(9,7,4);
   L.gap(4); L.plat(1,9,2);
   L.flat(14); L.check(1); L.thwomp(5); L.hopper(9); L.row(2,8,'?M?');
   L.flat(16); L.spike(3); L.spike(5); L.spikes(9,2); L.hopper(13);
@@ -178,7 +178,7 @@ const STAGES=[
   L.gap(5); L.plat(1,10,1); L.plat(3,9,1);
   L.flat(14); L.check(1); L.thwomp(5); L.hopper(9); L.spike(12);
   L.gap(8); L.liftH(10,.04); L.flyer(2,7,3);
-  L.flat(14); L.row(3,8,'BSB'); L.spikes(7,3); L.hopper(11); L.arc(6,6,5);
+  L.flat(16); L.row(3,8,'BSB'); L.spikes(7,3); L.hopper(13); L.arc(6,6,5);
   L.gap(4); L.row(1,8,'H');
   L.flat(18); L.check(1); L.stairs(3,5,true); L.stairs(8,5,false); L.flyer(14,8,3);
   L.gap(8); L.drop(1,11); L.drop(4,10);
@@ -186,7 +186,7 @@ const STAGES=[
   L.gap(9); L.liftH(11,.045); L.flyer(4,7,3);
   L.flat(14); L.check(1); L.hopper(4); L.hopper(8); L.flyer(11,8,3);
   L.gap(5); L.plat(1,10,1); L.plat(3,10,1);
-  L.flat(16); L.thwomp(4); L.spikes(7,3); L.thwomp(12); L.row(9,8,'M');
+  L.flat(16); L.thwomp(3); L.spikes(7,3); L.thwomp(13); L.row(9,8,'M');
   L.gap(10); L.drop(1,11); L.drop(4,10); L.drop(7,11);
   L.flat(14); L.walker(5); L.hopper(9); L.flyer(12,8,3);
   L.finish(6);
