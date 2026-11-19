@@ -167,7 +167,7 @@ function buildLevel(){
     spike(dx){ents.push({t:'spike',x:X(dx)*T,y:GY*T,w:T,h:0,st:0})},
     spikes(dx,n){for(let i=0;i<n;i++)ents.push({t:'spike',x:(X(dx)+i)*T,y:GY*T,w:T,h:30,st:1})},
     thwomp(dx){ents.push({t:'thwomp',x:X(dx)*T-2,y:3*T,y0:3*T,w:36,h:36,st:0,vy:0,wait:0})},
-    check(dx){const x=X(dx)*T;ents.push({t:'check',x,y:GY*T-64,w:T,h:64,done:checkX===x})},
+    check(dx){const x=X(dx)*T;ents.push({t:'check',x,y:GY*T-64,w:T,h:64,done:checkX!==null&&x<=checkX})},
     liftH(y,sp=.035){const n=L.gn,w=3*T,range=(n*T-w)/2+12,cx=L.s*T+n*T/2-w/2;
       ents.push({t:'lift',kind:'h',x:cx-range,y:y*T,w,h:14,cx,range,sp,tt:0,dx:0,dy:0})},
     liftV(dx,y,range,sp=.04){const cy=y*T,r=range*T;
@@ -321,7 +321,7 @@ function update(){
     keys.jumpPressed=0;keys.firePressed=0; return;
   }
   if(state==='select'){
-    if(keys.jumpPressed){ if(sel<=prog.unlocked)startStage(sel,'new'); else sfx.bump(); }
+    if(keys.jumpPressed){ if(sel<=prog.unlocked)startStage(sel,prog.stage===sel?'cont':'new'); else sfx.bump(); }
     keys.jumpPressed=0;keys.firePressed=0; return;
   }
   if(state==='over'){
@@ -485,7 +485,7 @@ function updateEnts(){
       else if(e.st===3){e.y-=1.5;if(e.y<=e.y0){e.y=e.y0;e.st=0}}
       if(!p.dead&&!p.win&&overlap(p,{x:e.x+3,y:e.y+3,w:e.w-6,h:e.h-4}))hurt();
     }else if(e.t==='check'){
-      if(!e.done&&p.x+p.w>e.x+10){
+      if(!e.done&&p.x+p.w>e.x+10&&(checkX===null||e.x>checkX)){
         e.done=true;checkX=e.x;checkPow=p.big?(p.fire?2:1):0;prog.stage=curStage;prog.checkX=e.x;prog.pow=checkPow;saveProg();
         sfx.check();addText(e.x+16,e.y-10,checkPow?'チェックポイント! (大きさキープ)':'チェックポイント!','#ff8aa8');sparkle(e.x+16,e.y);
       }
