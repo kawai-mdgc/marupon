@@ -222,7 +222,8 @@ const rnd=(a,b)=>a+Math.random()*(b-a);
 // ---- セーブ (ブラウザに保存) ----
 const PROG_KEY='marupon-prog-v2';
 let prog={unlocked:1,cleared:{},coins:0,score:0,stage:null,checkX:null,pow:0};
-function loadProg(){try{const s=JSON.parse(localStorage.getItem(PROG_KEY));if(s&&typeof s.unlocked==='number')prog=Object.assign(prog,s)}catch(e){}}
+function loadProg(){try{const s=JSON.parse(localStorage.getItem(PROG_KEY));if(s&&typeof s.unlocked==='number')prog=Object.assign(prog,s)}catch(e){}
+  for(const k in prog.cleared){const n=+k;if(prog.cleared[k]&&n>=1)prog.unlocked=Math.max(prog.unlocked,Math.min(STAGES.length,n+1))}}
 function saveProg(){prog.coins=coins;prog.score=score;try{localStorage.setItem(PROG_KEY,JSON.stringify(prog))}catch(e){}}
 loadProg();
 coins=prog.coins;score=prog.score;sel=Math.min(STAGES.length,prog.unlocked);
