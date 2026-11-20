@@ -171,7 +171,7 @@ const STAGES=[
   L.flat(14); L.check(1); L.thwomp(4); L.spike(7); L.thwomp(10); L.walker(12); L.row(1,8,'U');
   L.flat(16); L.stairs(3,4,true); L.stairs(7,4,false); L.hopper(12); L.ghost(8,9);
   L.gap(4);
-  L.flat(14); L.thwomp(3); L.thwomp(7); L.thwomp(11); L.cannon(12); L.door(14,'a');
+  L.flat(14); L.thwomp(3); L.thwomp(7); L.thwomp(11); L.cannon(12); L.door(5,'a');
   L.zone('a','night',zSpooky('Z','d'));
   L.finish(5);
  }},
@@ -340,3 +340,73 @@ const STAGES=[
   L.finish(7);
  }},
 ];
+
+// ============================================================
+//  コースをのばす部品 (どのステージも ゴールの前に、ここから 4〜8こ つなぎます)
+//  min = 何ばんめのステージから出るか / themes = そのテーマのときだけ
+// ============================================================
+const EXT_PARTS=[
+ {min:1,f:L=>{L.flat(14);L.row(3,8,'?B?');L.walker(7);L.walker(11)}},
+ {min:1,f:L=>{L.gap(4);L.arc(0,9,4);L.flat(12);L.row(2,8,'B?B');L.walker(8)}},
+ {min:1,f:L=>{L.flat(16);L.pipe(4,2);L.walker(8);L.pipe(12,3);L.coins(12,8,2)}},
+ {min:2,f:L=>{L.flat(14);L.spike(5);L.walker(9);L.coins(3,10,3)}},
+ {min:2,f:L=>{L.flat(14);L.row(2,8,'BMB');L.walker(8);L.spike(11)}},
+ {min:3,f:L=>{L.flat(16);L.spikes(5,2);L.arc(4,8,4);L.hopper(11)}},
+ {min:3,f:L=>{L.flat(14);L.hopper(4);L.hopper(9);L.coins(5,10,3)}},
+ {min:3,f:L=>{L.flat(14);L.spring(10);L.coins(9,4,4);L.walker(5)}},
+ {min:4,f:L=>{L.flat(14);L.thwomp(5);L.walker(10);L.row(1,8,'?')}},
+ {min:4,f:L=>{L.gap(5);L.plat(1,10,1);L.plat(3,9,1);L.flat(12);L.walker(6)}},
+ {min:4,f:L=>{L.flat(16);L.cannon(14);L.walker(6);L.row(8,7,'?')}},
+ {min:5,f:L=>{L.flat(16);L.flyer(5,8,3);L.flyer(11,9,3);L.spikes(8,2)}},
+ {min:5,f:L=>{L.flat(18);L.stairs(3,4,true);L.stairs(8,4,false);L.coins(4,6,7);L.walker(14)}},
+ {min:5,f:L=>{L.flat(14);L.row(3,7,'E');L.hopper(8);L.walker(11)}},
+ {min:6,f:L=>{L.gap(9);L.liftH(10,.04);L.flat(12);L.walker(6)}},
+ {min:6,f:L=>{L.gap(8);L.drop(1,11);L.drop(4,10);L.flat(12);L.hopper(6)}},
+ {min:6,f:L=>{L.flat(16);L.belt(1,12,-1);L.hopper(8);L.coins(5,10,5)}},
+ {min:7,f:L=>{L.flat(16);L.spikes(4,3);L.hopper(11);L.walker(14)}},
+ {min:7,f:L=>{L.flat(14);L.row(3,7,'J');L.spikes(7,2);L.hopper(11)}},
+ {min:8,f:L=>{L.flat(14);L.thwomp(3);L.spike(7);L.thwomp(10);L.walker(12)}},
+ {min:8,f:L=>{L.gap(7);L.pod(3);L.drop(1,10);L.drop(4,11);L.flat(12);L.walker(5)}},
+ {min:9,f:L=>{L.gap(9);L.liftV(2,10,1.7,.05);L.flat(12);L.hopper(5);L.hopper(9)}},
+ {min:9,f:L=>{L.flat(16);L.spikes(3,3);L.spikes(9,3);L.arc(3,7,4);L.arc(9,7,4)}},
+ {min:10,f:L=>{L.flat(16);L.cannon(14);L.hopper(5);L.spike(9);L.row(2,7,'D')}},
+ {min:11,f:L=>{L.flat(18);L.thwomp(4);L.spikes(7,3);L.thwomp(13);L.row(15,7,'N')}},
+ {min:11,f:L=>{L.gap(10);L.liftH(11,.05);L.flyer(4,7,3);L.flat(12);L.hopper(6)}},
+ {min:13,f:L=>{L.flat(18);L.hopper(4);L.hopper(8);L.spikes(11,3);L.flyer(16,8,3)}},
+ {min:14,f:L=>{L.gap(10);L.drop(1,11);L.drop(4,10);L.drop(7,11);L.flat(14);L.hopper(6);L.cannon(12)}},
+ {min:3,themes:['snow'],f:L=>{L.flat(16);L.penguin(6);L.penguin(11);L.row(3,8,'?M?')}},
+ {min:5,themes:['snow'],f:L=>{L.flat(18);L.penguin(5);L.spikes(9,2);L.penguin(14);L.coins(4,10,3)}},
+ {min:5,themes:['cave','forest','volcano'],f:L=>{L.flat(14);L.bat(5,4);L.bat(9,4);L.walker(11)}},
+ {min:7,themes:['cave','forest'],f:L=>{L.flat(16);L.bat(4,4);L.spikes(7,2);L.bat(11,4);L.row(2,8,'?M?')}},
+ {min:4,themes:['night','candy','sunset'],f:L=>{L.flat(14);L.ghost(8,9);L.walker(5);L.coins(4,10,4)}},
+ {min:7,themes:['night','candy'],f:L=>{L.flat(16);L.ghost(6,9);L.ghost(12,9);L.row(2,7,'Z')}},
+];
+function stageExtension(L,n,theme){
+  let a=(n*2654435761)>>>0;
+  const rnd=()=>{a=(a+0x6D2B79F5)|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+  const pool=EXT_PARTS.filter(p=>p.min<=n&&(!p.themes||p.themes.includes(theme)));
+  // 目標のながさ(マス): ステージが進むほど長く、コースごとに ±40マスの差
+  const target=Math.round(260+n*10+(rnd()-.5)*80),start=L.c;
+  const cnt=Math.max(2,Math.ceil((target-start)/15)),picks=[];
+  for(let i=0;i<cnt;i++){
+    let k,tries=0;
+    do{k=Math.min(pool.length-1,Math.floor(Math.pow(rnd(),0.8)*pool.length))}while(picks.length&&picks[picks.length-1]===pool[k]&&++tries<6);
+    picks.push(pool[k]);
+  }
+  picks.sort((x,y)=>x.min-y.min);
+  const mid=start+(target-start)/2;let checked=false;
+  for(const p of picks){
+    if(L.c>=target)break;
+    if(!checked&&L.c>=mid){checked=true;L.flat(12);L.check(1);L.walker(7)}
+    p.f(L);
+  }
+}
+STAGES.forEach((st,i)=>{
+  if(st.tower)return;
+  const orig=st.build;
+  st.build=function(L){
+    const fin=L.finish;
+    L.finish=function(n){L.finish=fin;stageExtension(L,i+1,st.theme);fin.call(L,n)};
+    orig.call(this,L);
+  };
+});
