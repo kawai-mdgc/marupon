@@ -671,7 +671,7 @@ function updatePlayer(){
   if(p.onGround&&Math.abs(p.vx)>3.5&&frame%7===0)puff(p.x+p.w/2-p.face*8,p.y+p.h,1);
   if(p.star>0&&frame%3===0)particles.push({x:p.x+rnd(0,p.w),y:p.y+rnd(0,p.h),vx:rnd(-.5,.5),vy:rnd(-1,0),life:20,max:20,c:['#ffe45c','#ff8aa8','#7ad6ff','#9aff9a'][Math.floor(rnd(0,4))],r:3,g:0,star:true});
   if(p.y>ROWS*T+40)die();
-  if(p.x+p.w>goalX&&p.y+p.h>goalG*T-8*T&&p.y<goalG*T+T&&!p.win){p.win=true;winT=0;score+=500;markCleared();sfx.win();sparkle(goalX,goalG*T-200,'#ff5a7a');sparkle(goalX,goalG*T-120,'#ffe45c')}
+  if(!curZ&&p.x+p.w>goalX&&p.y+p.h>goalG*T-8*T&&p.y<goalG*T+T&&!p.win){p.win=true;winT=0;score+=500;markCleared();sfx.win();sparkle(goalX,goalG*T-200,'#ff5a7a');sparkle(goalX,goalG*T-120,'#ffe45c')}
 }
 
 function killEnemy(e,pts=100){
