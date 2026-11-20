@@ -26,6 +26,11 @@
 //  [ 動く足場 ]  (穴の中で使う)
 //   L.liftH(y,はやさ)  穴いっぱいに左右     L.liftV(dx,y,はば,はやさ) 上下
 //   L.drop(dx,y)       のると落ちる足場
+//  [ ちかへのいりぐち ]
+//   L.pipeIn(dx,高さ,'id')  入れる土管(上で ↓ キー)   L.door(dx,'id')  とびら(前で ↓ キー)
+//   L.zone('id','theme',zTreasure('M','p'))  地下へやを作る (部品は下の zTreasure など)
+//  [ あたらしい てき ] L.ghost(dx,行) おばけ  L.bat(dx,行) コウモリ  L.penguin(dx) ペンギン
+//  [ アイテムブロックの文字 ] E=バリア J=つばさ N=じしゃく D=ダッシュブーツ Z=とけい
 //  [ しかけ ]
 //   L.spring(dx)        ジャンプだい(乗ると高く跳ぶ)
 //   L.spiny(dx)         とげとげてき(ふめない。たまで倒せる)
@@ -37,6 +42,40 @@
 //
 //  むずかしさの目安: ステージ1=はじめて … 10=中ボス … 20=ラスボス
 // ============================================================
+
+// ---- 地下へや・とびら用の部品 (L.zone('id','theme',zTreasure('M','p')) のように使う) ----
+//   第2引数 k : 'p'=土管でもどる  'd'=とびらでもどる
+const _ex=(L,k,dx)=>k==='d'?L.exitDoor(dx):L.exitPipe(dx,2);
+const zTreasure=(item,k)=>function(L){L.flat(26);L.row(4,8,'?'+item+'?');L.arc(9,10,8);L.coins(15,10,5);_ex(L,k,22)};
+const zGauntlet=(item,k)=>function(L){L.flat(14);L.row(2,8,'?'+item+'?');L.spikes(7,2);L.hopper(10);L.flat(14);L.walker(3);L.coins(4,10,4);L.cannon(11);_ex(L,k,8)};
+const zSpooky=(item,k)=>function(L){L.flat(14);L.row(3,8,'?'+item+'?');L.ghost(8,9);L.flat(14);L.ghost(4,9);L.coins(6,10,5);_ex(L,k,9)};
+const zBats=(item,k)=>function(L){L.flat(14);L.bat(5,4);L.row(8,8,'?'+item+'?');L.flat(14);L.bat(4,4);L.bat(9,4);L.coins(5,10,4);_ex(L,k,10)};
+
+// ---- 縦(のぼり)ステージ ----
+//  { tower:{rows:54} } のステージは「うえへ のぼる」。ゆかから みずが せまってくる!
+//  cols=足場の左はし(左から何マス目) 3マスずつ高くなる / len=足場の長さ
+//  coins/spikes/fly/bat/ghost/cannon = 何こごとに置くか   items=[[足場番号,'E']..]
+function buildTower(L,o){
+  const len=o.len||4,dh=3,n=o.cols.length;
+  o.cols.forEach((c,i)=>{
+    const h=dh*(i+1),nxt=o.cols[i+1]===undefined?c:o.cols[i+1],far=nxt>c?c:c+len-1;
+    L.tplat(c,h,len);
+    if(o.coins&&i%2===0)L.tcoins(c,h,len);
+    if(i<1)return;
+    if(o.spikes&&i%o.spikes===o.spikes-1)L.tspikes(far,h,1);
+    if(o.fly&&i%o.fly===o.fly-1)L.tflyer(c,h,3);
+    if(o.bat&&i%o.bat===o.bat-1)L.tbat(c+1,h);
+    if(o.ghost&&i%o.ghost===o.ghost-1)L.tghost(c,h);
+    if(o.cannon&&i%o.cannon===o.cannon-1)L.tcannon(far,h);
+  });
+  (o.items||[]).forEach(([i,ch])=>{const c=o.cols[i],nxt=o.cols[i+1]===undefined?c:o.cols[i+1],far=nxt>c?c:c+len-1;L.tblock(far,dh*(i+1),ch)});
+  L.tcheck(o.cols[Math.floor(n/2)]+1,dh*(Math.floor(n/2)+1));
+  const gh=dh*(n+1),lc=o.cols[n-1];if(lc>=12){L.tplat(17,gh,7);L.tgoal(20,gh)}else{L.tplat(12,gh,10);L.tgoal(19,gh)}
+  L.tlava(o.delay||300,o.rise,o.hazard);
+}
+const _zz=[8,14,19,13,7,11,17,20,14,8,12,17,20,14,8,13];
+const _mir=a=>a.map(c=>21-c);
+
 const STAGES=[
  // 1 ------------------------------------------------ はじめて
  {name:'そうげん',theme:'grass',build(L){
@@ -59,11 +98,12 @@ const STAGES=[
   L.flat(14); L.check(1); L.stairs(4,4,true); L.stairs(8,4,false); L.coins(4,6,8);
   L.flat(12); L.walker(4); L.walker(9); L.row(5,8,'BMB'); L.spring(10);
   L.gap(4); L.plat(1,9,2);
-  L.flat(16); L.pipe(4,2); L.spike(8); L.walker(12); L.pipe(13,3);
+  L.flat(16); L.pipeIn(4,2,'a'); L.spike(8); L.walker(12); L.pipe(13,3);
   L.gap(3);
   L.flat(12); L.row(3,8,'?B?B?'); L.walker(8); L.spike(10);
   L.gap(4); L.arc(0,9,4);
   L.flat(14); L.walker(5); L.walker(10);
+  L.zone('a','cave',zTreasure('N','p'));
   L.finish(5);
  }},
  // 3 ------------------------------------------------ ぴょんぴょん・見えるトゲ
@@ -72,12 +112,13 @@ const STAGES=[
   L.flat(12); L.row(3,8,'?U?'); L.walker(6); L.spikes(9,2);
   L.gap(4); L.plat(1,10,2);
   L.flat(14); L.check(1); L.hopper(6); L.walker(11); L.pipe(8,2); L.spiny(11);
-  L.flat(14); L.thwomp(7); L.row(2,8,'BMB'); L.coins(5,10,3);
+  L.flat(14); L.thwomp(7); L.row(2,8,'BMB'); L.coins(5,10,3); L.door(11,'a');
   L.gap(3); L.arc(0,9,3);
   L.flat(16); L.spikes(4,3); L.arc(3,8,5); L.hopper(11); L.walker(14);
   L.gap(5); L.plat(1,10,1); L.plat(3,9,1);
   L.flat(14); L.hopper(5); L.hopper(10); L.spike(8);
   L.flat(8); L.thwomp(4); L.walker(6);
+  L.zone('a','cave',zTreasure('J','d'));
   L.finish(5);
  }},
  // 4 ------------------------------------------------ 石・階段
@@ -90,59 +131,48 @@ const STAGES=[
   L.gap(4); L.plat(1,9,2);
   L.flat(14); L.spike(4); L.spike(7); L.thwomp(10);
   L.gap(5); L.plat(1,10,1); L.plat(3,9,1);
-  L.flat(18); L.check(1); L.pipe(3,3); L.hopper(7); L.walker(12); L.row(8,8,'BMB'); L.cannon(16);
+  L.flat(18); L.check(1); L.pipeIn(3,3,'a'); L.hopper(7); L.walker(12); L.row(8,8,'BMB'); L.cannon(16);
   L.gap(4);
   L.flat(12); L.thwomp(4); L.hopper(8);
+  L.zone('a','cave',zGauntlet('D','p'));
   L.finish(6);
  }},
  // 5 ------------------------------------------------ 氷(すべる)・ふわふわ
- {name:'ゆきやま',theme:'snow',build(L){
-  L.flat(12); L.walker(8);
-  L.flat(14); L.row(3,8,'?B?'); L.walker(7); L.walker(11);
+ {name:'ゆきやま',news:'ペンギン(すべってくる!)',theme:'snow',build(L){
+  L.flat(12); L.penguin(8);
+  L.flat(14); L.row(3,8,'?B?'); L.penguin(7); L.penguin(11);
   L.gap(3);
   L.flat(14); L.check(1); L.flyer(7,8,4); L.row(5,8,'BMB');
-  L.flat(16); L.pipe(5,2); L.flyer(10,9,4); L.walker(13);
+  L.flat(16); L.pipe(5,2); L.flyer(10,9,4); L.penguin(13);
   L.gap(4); L.plat(1,10,2);
-  L.flat(14); L.spikes(4,2); L.walker(9); L.arc(3,8,4);
+  L.flat(14); L.spikes(4,2); L.penguin(9); L.arc(3,8,4);
   L.gap(3);
   L.flat(14); L.flyer(5,8,3); L.flyer(10,9,3); L.row(6,8,'U');
   L.gap(5); L.plat(1,10,1); L.plat(3,10,1);
-  L.flat(16); L.check(1); L.walker(5); L.hopper(9); L.flyer(12,8,3); L.spiny(13);
+  L.flat(16); L.check(1); L.penguin(5); L.hopper(9); L.flyer(12,8,3); L.spiny(13);
   L.gap(4);
-  L.flat(12); L.pipe(4,3); L.walker(9);
+  L.flat(12); L.pipe(4,3); L.penguin(9);
   L.finish(5);
  }},
  // 6 ------------------------------------------------ 動く足場
- {name:'そらのゆき',news:'ベルトコンベア',theme:'snow',build(L){
-  L.flat(10);
-  L.gap(7); L.liftH(11,.03);
-  L.flat(12); L.check(1); L.walker(8); L.row(3,8,'?M?');
-  L.gap(8); L.liftH(10,.035); L.flyer(2,7,3);
-  L.flat(14); L.flyer(6,8,4); L.hopper(10); L.row(3,8,'S');
-  L.gap(8); L.drop(1,11); L.drop(4,11);
-  L.flat(12); L.walker(5); L.spikes(8,2);
-  L.gap(7); L.liftV(2,10,1.6,.04);
-  L.flat(14); L.check(1); L.flyer(5,8,3); L.hopper(9); L.row(4,8,'BMB'); L.belt(1,10,-1);
-  L.gap(9); L.liftH(10,.04);
-  L.flat(12); L.walker(6);
-  L.gap(8); L.drop(1,10); L.drop(4,11);
-  L.flat(12);
-  L.finish(5);
+ // 6 ------------------------------------------------ のぼりステージ
+ {name:'ゆきのとう',theme:'snow',news:'うえへ のぼれ! みずが せまってくる',tower:{rows:54},build(L){
+  buildTower(L,{cols:_zz,coins:1,spikes:5,fly:4,rise:.42,hazard:'water',items:[[3,'E'],[9,'D']]});
  }},
- // 7 ------------------------------------------------ 石のならぶ夜道
- {name:'よるのもり',theme:'night',build(L){
+ {name:'よるのもり',news:'おばけ(みているとうごかない)',theme:'night',build(L){
   L.flat(10); L.hopper(7);
   L.flat(14); L.thwomp(4); L.thwomp(9); L.spike(12); L.row(1,8,'?');
   L.gap(3); L.row(1,8,'H');
-  L.flat(14); L.check(1); L.hopper(5); L.spike(8); L.spike(11); L.walker(7);
+  L.flat(14); L.check(1); L.hopper(5); L.spike(8); L.spike(11); L.walker(7); L.ghost(8,9);
   L.flat(14); L.thwomp(3); L.spikes(6,2); L.thwomp(11); L.row(8,8,'BMB');
   L.gap(4); L.plat(1,9,2);
-  L.flat(16); L.hopper(4); L.hopper(8); L.hopper(12); L.coins(5,9,6); L.cannon(14);
+  L.flat(16); L.hopper(4); L.hopper(8); L.hopper(12); L.coins(5,9,6); L.cannon(14); L.ghost(8,9);
   L.gap(5); L.plat(1,10,1); L.row(2,8,'H');
   L.flat(14); L.check(1); L.thwomp(4); L.spike(7); L.thwomp(10); L.walker(12); L.row(1,8,'U');
-  L.flat(16); L.stairs(3,4,true); L.stairs(7,4,false); L.hopper(12);
+  L.flat(16); L.stairs(3,4,true); L.stairs(7,4,false); L.hopper(12); L.ghost(8,9);
   L.gap(4);
-  L.flat(14); L.thwomp(3); L.thwomp(7); L.thwomp(11); L.cannon(12);
+  L.flat(14); L.thwomp(3); L.thwomp(7); L.thwomp(11); L.cannon(12); L.door(14,'a');
+  L.zone('a','night',zSpooky('Z','d'));
   L.finish(5);
  }},
  // 8 ------------------------------------------------ 長い穴・空の道
@@ -155,7 +185,7 @@ const STAGES=[
   L.gap(8); L.liftV(2,10,1.5,.045); L.pod(4);
   L.flat(12); L.check(1); L.flyer(4,8,3); L.flyer(8,9,3); L.row(5,8,'S');
   L.gap(7); L.drop(1,10); L.drop(4,11);
-  L.flat(14); L.hopper(4); L.hopper(9); L.spike(6);
+  L.flat(14); L.hopper(4); L.hopper(9); L.spike(6); L.row(11,7,'D');
   L.gap(10); L.liftH(10,.045);
   L.flat(12); L.thwomp(5); L.flyer(9,8,3);
   L.gap(8); L.drop(1,11); L.drop(4,10);
@@ -163,19 +193,20 @@ const STAGES=[
   L.finish(5);
  }},
  // 9 ------------------------------------------------ トゲ・石・ぴょんぴょん
- {name:'どうくつ',theme:'cave',build(L){
+ {name:'どうくつ',news:'コウモリ(ちかづくとおそってくる)',theme:'cave',build(L){
   L.flat(10); L.hopper(7);
   L.flat(17); L.spikes(3,3); L.spikes(9,3); L.arc(3,7,4); L.arc(9,7,4);
   L.gap(4); L.plat(1,9,2); L.pod(2);
-  L.flat(14); L.check(1); L.thwomp(5); L.hopper(9); L.row(2,8,'?M?'); L.cannon(12);
-  L.flat(16); L.spike(3); L.spike(5); L.spikes(9,2); L.hopper(13);
+  L.flat(14); L.check(1); L.thwomp(5); L.hopper(9); L.row(2,8,'?M?'); L.cannon(12); L.bat(7,4);
+  L.flat(16); L.spike(3); L.spike(5); L.spikes(9,2); L.hopper(13); L.door(12,'a');
   L.gap(5); L.plat(1,10,1); L.plat(3,10,1);
-  L.flat(14); L.thwomp(4); L.thwomp(8); L.thwomp(12); L.row(1,8,'U');
+  L.flat(14); L.thwomp(4); L.thwomp(8); L.thwomp(12); L.row(1,8,'U'); L.bat(6,4);
   L.flat(16); L.check(1); L.stairs(3,5,true); L.stairs(8,5,false);
   L.gap(4); L.row(1,8,'H');
   L.flat(14); L.hopper(4); L.hopper(8); L.spikes(11,2);
   L.gap(6); L.drop(1,11); L.drop(4,10);
   L.flat(16); L.check(1); L.spike(3); L.thwomp(6); L.spikes(9,2); L.hopper(13);
+  L.zone('a','cave',zBats('J','d'));
   L.finish(5);
  }},
  // 10 ----------------------------------------------- ぜんぶ入り
@@ -183,11 +214,11 @@ const STAGES=[
   L.flat(10); L.walker(7); L.row(3,8,'?M?');
   L.flat(14); L.hopper(5); L.flyer(10,8,3); L.spikes(7,2); L.spring(11);
   L.gap(5); L.plat(1,10,1); L.plat(3,9,1);
-  L.flat(14); L.check(1); L.thwomp(5); L.hopper(9); L.spike(12); L.spiny(11);
+  L.flat(14); L.check(1); L.thwomp(5); L.hopper(9); L.spike(12); L.spiny(11); L.bat(8,4);
   L.gap(8); L.liftH(10,.04); L.flyer(2,7,3); L.pod(4);
-  L.flat(16); L.row(3,8,'BSB'); L.spikes(7,3); L.hopper(13); L.arc(6,6,5);
+  L.flat(16); L.row(3,8,'BSB'); L.spikes(7,3); L.hopper(13); L.arc(6,6,5); L.door(12,'a');
   L.gap(4); L.row(1,8,'H');
-  L.flat(18); L.check(1); L.stairs(3,5,true); L.stairs(8,5,false); L.flyer(14,8,3); L.belt(1,14,-1);
+  L.flat(18); L.check(1); L.stairs(3,5,true); L.stairs(8,5,false); L.flyer(14,8,3); L.belt(1,14,-1); L.ghost(9,9);
   L.gap(8); L.drop(1,11); L.drop(4,10);
   L.flat(14); L.thwomp(3); L.spike(6); L.thwomp(9); L.hopper(12); L.row(1,8,'U'); L.cannon(12);
   L.gap(9); L.liftH(11,.045); L.flyer(4,7,3);
@@ -196,133 +227,116 @@ const STAGES=[
   L.flat(16); L.thwomp(3); L.spikes(7,3); L.thwomp(13); L.row(9,8,'M');
   L.gap(10); L.drop(1,11); L.drop(4,10); L.drop(7,11);
   L.flat(14); L.walker(5); L.hopper(9); L.flyer(12,8,3);
+  L.zone('a','candy',zTreasure('E','d'));
   L.finish(6);
  }},
  // 11 ----------------------------------------------- 20ステージ編はここから
  {name:'もりのいりぐち',theme:'forest',build(L){
   L.flat(10); L.walker(7); L.row(3,8,'?M?');
-  L.flat(14); L.hopper(7); L.walker(12); L.spikes(3,2); L.spring(11);
+  L.flat(14); L.hopper(7); L.walker(12); L.spikes(3,2); L.spring(11); L.bat(9,4);
   L.gap(4); L.plat(1,10,1);
-  L.flat(14); L.check(1); L.flyer(6,8,3); L.spike(10);
+  L.flat(14); L.check(1); L.flyer(6,8,3); L.spike(10); L.door(11,'a');
   L.gap(5); L.plat(1,10,1); L.plat(3,9,1);
-  L.flat(16); L.row(3,8,'BSB'); L.hopper(8); L.thwomp(12); L.walker(14); L.spiny(13);
+  L.flat(16); L.row(3,8,'BSB'); L.hopper(8); L.thwomp(12); L.walker(14); L.spiny(13); L.bat(8,4);
   L.gap(5); L.arc(0,8,5);
   L.flat(12); L.walker(6);
+  L.zone('a','cave',zTreasure('E','d'));
   L.finish(5);
  }},
  // 12
- {name:'ふくろうのおか',theme:'grass',build(L){
-  L.flat(10); L.hopper(6);
-  L.flat(14); L.row(2,8,'?U?'); L.walker(7); L.spikes(9,3);
-  L.gap(5); L.plat(1,10,1); L.plat(3,10,1);
-  L.flat(14); L.check(1); L.hopper(6); L.hopper(11); L.flyer(8,7,3); L.belt(1,10,1);
-  L.gap(9); L.liftH(10,.05);
-  L.flat(16); L.thwomp(4); L.spikes(8,2); L.walker(12); L.row(13,8,'M');
-  L.gap(6); L.plat(1,10,1); L.plat(4,9,1);
-  L.flat(14); L.hopper(5); L.walker(9); L.spike(11); L.cannon(12);
-  L.finish(6);
+ // 12 -----------------------------------------------
+ {name:'ふくろうのもり',theme:'forest',news:'コウモリが さがっている',tower:{rows:54},build(L){
+  buildTower(L,{cols:_mir(_zz),coins:1,bat:3,rise:.46,hazard:'water',items:[[4,'J']]});
  }},
- // 13
  {name:'さばくのよる',theme:'desert',build(L){
   L.flat(12); L.walker(6); L.hopper(9);
   L.flat(14); L.spikes(3,3); L.hopper(9); L.walker(12);
   L.gap(5); L.plat(1,10,1); L.plat(3,9,1);
-  L.flat(14); L.check(1); L.thwomp(4); L.thwomp(9); L.walker(12); L.spring(11);
+  L.flat(14); L.check(1); L.thwomp(4); L.thwomp(9); L.walker(12); L.spring(11); L.ghost(9,9);
   L.gap(8); L.liftV(2,10,1.8,.05); L.pod(4);
-  L.flat(16); L.row(2,8,'?M?'); L.hopper(7); L.spike(10); L.spikes(12,2);
+  L.flat(16); L.row(2,8,'?M?'); L.hopper(7); L.spike(10); L.spikes(12,2); L.door(14,'a');
   L.gap(6); L.drop(1,11); L.drop(4,10);
-  L.flat(16); L.flyer(4,8,4); L.hopper(8); L.thwomp(12);
+  L.flat(16); L.flyer(4,8,4); L.hopper(8); L.thwomp(12); L.ghost(8,9);
+  L.zone('a','night',zSpooky('N','d'));
   L.finish(6);
  }},
  // 14
  {name:'こおりのどうくつ',theme:'snow',build(L){
-  L.flat(12); L.walker(6); L.flyer(9,8,3);
-  L.flat(16); L.spikes(5,3); L.hopper(11); L.walker(14); L.spiny(13);
+  L.flat(12); L.penguin(6); L.flyer(9,8,3);
+  L.flat(16); L.spikes(5,3); L.hopper(11); L.penguin(14); L.spiny(13);
   L.gap(5); L.plat(1,10,1); L.plat(3,10,1);
-  L.flat(16); L.check(1); L.hopper(5); L.hopper(10); L.flyer(7,7,3); L.row(12,8,'S');
+  L.flat(16); L.check(1); L.hopper(5); L.hopper(10); L.flyer(7,7,3); L.row(12,8,'S'); L.bat(7,4);
   L.gap(9); L.liftH(10,.05); L.flyer(3,7,3);
-  L.flat(14); L.thwomp(4); L.spike(8); L.walker(11); L.cannon(12);
+  L.flat(14); L.thwomp(4); L.spike(8); L.penguin(11); L.cannon(12); L.door(13,'a');
   L.gap(7); L.drop(1,11); L.drop(4,11);
-  L.flat(16); L.spikes(4,3); L.flyer(9,8,3); L.hopper(13);
+  L.flat(16); L.spikes(4,3); L.flyer(9,8,3); L.hopper(13); L.bat(6,4);
+  L.zone('a','cave',zBats('D','d'));
   L.finish(6);
  }},
  // 15
- {name:'かざんのふもと',theme:'volcano',build(L){
-  L.flat(12); L.hopper(6); L.walker(9);
-  L.flat(16); L.spikes(3,3); L.spikes(9,3); L.arc(3,7,4); L.arc(9,7,4);
-  L.gap(5); L.plat(1,10,1); L.plat(3,9,1);
-  L.flat(14); L.check(1); L.thwomp(4); L.hopper(8); L.thwomp(12); L.belt(1,10,-1);
-  L.gap(9); L.liftH(11,.055); L.flyer(4,7,3); L.pod(4);
-  L.flat(16); L.row(2,8,'BMB'); L.hopper(7); L.spike(10); L.walker(13);
-  L.gap(8); L.drop(1,11); L.drop(4,10); L.drop(7,11);
-  L.flat(14); L.walker(5); L.hopper(9); L.spiny(11);
-  L.finish(6);
+ // 15 -----------------------------------------------
+ {name:'かざんのとう',theme:'volcano',news:'ようがんが のぼってくる',tower:{rows:54},build(L){
+  buildTower(L,{cols:_zz,spikes:3,cannon:4,fly:5,rise:.52,hazard:'lava',items:[[5,'Z'],[10,'N']]});
  }},
- // 16
  {name:'ほしぞらのみち',theme:'night',build(L){
   L.flat(10); L.flyer(5,8,3);
   L.gap(9); L.liftH(10,.05); L.flyer(3,7,3); L.pod(4);
-  L.flat(16); L.check(1); L.hopper(5); L.hopper(9); L.flyer(12,8,3);
+  L.flat(16); L.check(1); L.hopper(5); L.hopper(9); L.flyer(12,8,3); L.ghost(8,9);
   L.gap(8); L.drop(1,11); L.drop(4,10);
-  L.flat(16); L.spikes(4,3); L.thwomp(9); L.hopper(13); L.cannon(14);
+  L.flat(16); L.spikes(4,3); L.thwomp(9); L.hopper(13); L.cannon(14); L.ghost(8,9); L.row(4,7,'Z');
   L.gap(9); L.liftV(2,10,1.8,.055);
-  L.flat(16); L.check(1); L.thwomp(3); L.flyer(7,8,4); L.walker(11); L.row(13,8,'U');
+  L.flat(16); L.check(1); L.thwomp(3); L.flyer(7,8,4); L.walker(11); L.row(13,8,'U'); L.ghost(8,9);
   L.gap(10); L.drop(1,11); L.drop(4,10); L.drop(7,11);
-  L.flat(14); L.hopper(5); L.hopper(10);
+  L.flat(14); L.hopper(5); L.hopper(10); L.door(13,'a');
+  L.zone('a','night',zSpooky('J','d'));
   L.finish(6);
  }},
  // 17
  {name:'ゆうやけのはし',theme:'sunset',build(L){
   L.flat(12); L.hopper(6); L.walker(9);
   L.gap(6); L.plat(1,10,1); L.plat(4,9,1);
-  L.flat(14); L.spikes(3,3); L.hopper(9); L.flyer(12,8,3);
+  L.flat(14); L.spikes(3,3); L.hopper(9); L.flyer(12,8,3); L.row(3,7,'N');
   L.gap(7); L.drop(1,11); L.drop(4,11);
   L.flat(16); L.check(1); L.thwomp(4); L.spikes(7,3); L.thwomp(13); L.belt(1,12,1);
   L.gap(10); L.liftH(11,.06); L.flyer(4,7,3);
-  L.flat(16); L.hopper(5); L.spike(9); L.hopper(13); L.row(2,8,'M'); L.spiny(13);
+  L.flat(16); L.hopper(5); L.spike(9); L.hopper(13); L.row(2,8,'M'); L.spiny(13); L.door(13,'a');
   L.gap(5); L.arc(0,8,5);
   L.flat(14); L.walker(5); L.flyer(9,8,3); L.cannon(12);
+  L.zone('a','cave',zGauntlet('J','d'));
   L.finish(6);
  }},
  // 18
  {name:'ふかいどうくつ',theme:'cave',build(L){
   L.flat(12); L.hopper(6); L.spike(9);
-  L.flat(16); L.spikes(3,3); L.spikes(9,3); L.walker(13); L.spring(13);
+  L.flat(16); L.spikes(3,3); L.spikes(9,3); L.walker(13); L.spring(13); L.bat(8,4);
   L.gap(5); L.plat(1,10,1); L.plat(3,9,1);
-  L.flat(14); L.check(1); L.thwomp(3); L.thwomp(7); L.thwomp(11);
+  L.flat(14); L.check(1); L.thwomp(3); L.thwomp(7); L.thwomp(11); L.door(12,'a');
   L.gap(9); L.liftV(2,10,1.9,.055); L.pod(4);
-  L.flat(16); L.hopper(4); L.hopper(8); L.spikes(11,3);
+  L.flat(16); L.hopper(4); L.hopper(8); L.spikes(11,3); L.bat(8,4);
   L.gap(8); L.drop(1,11); L.drop(4,10); L.drop(7,11);
-  L.flat(16); L.check(1); L.spike(4); L.spike(6); L.thwomp(10); L.hopper(13); L.cannon(14);
+  L.flat(16); L.check(1); L.spike(4); L.spike(6); L.thwomp(10); L.hopper(13); L.cannon(14); L.bat(8,4);
+  L.zone('a','cave',zBats('E','d'));
   L.finish(6);
  }},
  // 19
- {name:'おかしのしろ',theme:'candy',build(L){
-  L.flat(12); L.hopper(6); L.flyer(9,8,3);
-  L.gap(6); L.plat(1,10,1); L.plat(4,10,1);
-  L.flat(16); L.spikes(3,3); L.hopper(9); L.thwomp(13); L.belt(1,12,-1);
-  L.gap(9); L.liftH(10,.06); L.flyer(3,7,3);
-  L.flat(16); L.check(1); L.hopper(5); L.spikes(8,3); L.hopper(13); L.spiny(13);
-  L.gap(10); L.drop(1,11); L.drop(4,10); L.drop(7,11); L.pod(5);
-  L.flat(16); L.thwomp(4); L.spike(8); L.thwomp(11); L.row(13,8,'S'); L.cannon(14);
-  L.gap(9); L.liftV(2,10,1.9,.06); L.flyer(6,7,3);
-  L.flat(14); L.hopper(5); L.hopper(9);
-  L.finish(6);
+ // 19 -----------------------------------------------
+ {name:'おかしのとう',theme:'candy',news:'おばけに ちゅうい',tower:{rows:54},build(L){
+  buildTower(L,{cols:_mir(_zz),coins:1,ghost:3,fly:4,rise:.56,hazard:'poison',items:[[2,'E'],[8,'J'],[12,'D']]});
  }},
- // 20 ----------------------------------------------- ラスボス
  {name:'まおうのおしろ',theme:'volcano',build(L){
   L.flat(10); L.walker(6); L.row(3,8,'?M?');
-  L.flat(16); L.hopper(5); L.spikes(8,3); L.hopper(13); L.spring(13);
+  L.flat(16); L.hopper(5); L.spikes(8,3); L.hopper(13); L.spring(13); L.row(5,7,'E');
   L.gap(5); L.plat(1,10,1); L.plat(3,9,1);
-  L.flat(16); L.check(1); L.thwomp(4); L.spikes(7,3); L.thwomp(13); L.belt(1,12,-1);
+  L.flat(16); L.check(1); L.thwomp(4); L.spikes(7,3); L.thwomp(13); L.belt(1,12,-1); L.ghost(10,9);
   L.gap(9); L.liftH(10,.06); L.flyer(3,7,3); L.pod(4);
-  L.flat(18); L.hopper(4); L.hopper(8); L.spikes(11,3); L.flyer(16,8,3); L.row(2,8,'U'); L.cannon(16);
+  L.flat(18); L.hopper(4); L.hopper(8); L.spikes(11,3); L.flyer(16,8,3); L.row(2,8,'U'); L.cannon(16); L.door(13,'a');
   L.gap(10); L.drop(1,11); L.drop(4,10); L.drop(7,11);
-  L.flat(18); L.check(1); L.thwomp(4); L.spike(8); L.thwomp(11); L.hopper(15); L.spiny(15);
+  L.flat(18); L.check(1); L.thwomp(4); L.spike(8); L.thwomp(11); L.hopper(15); L.spiny(15); L.bat(9,4);
   L.gap(10); L.liftV(2,10,2,.06); L.flyer(6,7,3); L.pod(5);
-  L.flat(18); L.spikes(4,3); L.spikes(10,3); L.hopper(15); L.row(7,8,'S'); L.cannon(16);
+  L.flat(18); L.spikes(4,3); L.spikes(10,3); L.hopper(15); L.row(7,8,'S'); L.cannon(16); L.penguin(10);
   L.gap(6); L.plat(1,10,1); L.plat(4,9,1);
   L.flat(16); L.hopper(5); L.flyer(8,8,3); L.thwomp(12);
+  L.zone('a','night',zGauntlet('Z','d'));
   L.finish(7);
  }},
 ];
