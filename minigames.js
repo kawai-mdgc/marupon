@@ -117,19 +117,20 @@ function mgTimerHUD(g,left,x,y,dbl){
   if(dbl&&left>0&&left<=600)outlinedText('ラスト10びょう！ ポイント2ばい',400,y+30,15+Math.abs(Math.sin(g.t*0.12))*2,'#ffd23f',OUT,4);
   mgVignette(g,left);
 }
+const MG_CD=190;
 function mgTitle(g){
-  if(g.t<150){outlinedText(g.title,400,28,22,'#fff')}
+  if(g.t<MG_CD+30){outlinedText(g.title,400,28,22,'#fff')}
 }
 function mgCountdown(t,help){
-  if(t>=150)return;
-  if(t<120){
+  if(t>=MG_CD+40)return;
+  if(t<MG_CD){
     ctx.fillStyle='rgba(0,0,0,0.18)';ctx.fillRect(0,0,W,H);
-    const n=3-Math.floor(t/40),k=1-(t%40)/40;
+    const n=3-Math.floor(t/60),k=1-(t%60)/60;
     outlinedText(String(n),400,H/2+30,90+k*40,'#ffd23f');
     rr(40,64,720,34,17);ctx.fillStyle='rgba(255,255,255,0.92)';ctx.fill();ctx.lineWidth=3;ctx.strokeStyle=OUT;ctx.stroke();
     outlinedText(help,400,82,15,'#fff',OUT,4);
   }else{
-    const k=1-(t-120)/30;
+    const k=1-(t-MG_CD)/40;
     outlinedText('スタート！',400,H/2+20,60+k*30,'#7dff6a');
   }
 }
@@ -193,7 +194,7 @@ function mgCreateHop(seed){
   g.update=function(){
     g.t++;mgFx(g);
     if(g.done){g.endT++;return}
-    if(g.t<=120)return;
+    if(g.t<=MG_CD)return;
     g.ft++;
     const pt=g.ft,sec=pt/60;
     g.cf+=(1.5+0.1*sec)/60;
@@ -300,7 +301,7 @@ function mgCreateHop(seed){
     }
     ctx.restore();
     // prompt bubble (+ preview of next)
-    if(g.t>=100&&!g.done&&!me.out){
+    if(g.t>=MG_CD&&!g.done&&!me.out){
       const sx=me.x-camX,by=LY[3]-100;
       rr(sx-26,by,52,44,12);ctx.fillStyle=g.turbo?'#fff1a8':'#fff';ctx.fill();ctx.lineWidth=g.turbo?5:3.5;ctx.strokeStyle=g.turbo?'#ff9f43':OUT;ctx.stroke();
       ctx.beginPath();ctx.moveTo(sx-6,by+43);ctx.lineTo(sx,by+54);ctx.lineTo(sx+6,by+43);ctx.fillStyle=g.turbo?'#fff1a8':'#fff';ctx.fill();
@@ -325,7 +326,7 @@ function mgCreateHop(seed){
       outlinedText(g.pts+'てん',90,28,22,'#fff');
       outlinedText((pt/60).toFixed(1)+'びょう',720,28,18,'#fff');
       if(g.streak>=3)outlinedText('れんぞく '+g.streak,400,112+0,18,'#ffd23f',OUT,4);
-      if(!me.out&&me.board-g.cf<2.6&&g.t>130){ctx.strokeStyle='rgba(255,40,40,'+(0.35+0.3*Math.abs(Math.sin(g.t*0.2)))+')';ctx.lineWidth=10;ctx.strokeRect(0,0,W,H)}
+      if(!me.out&&me.board-g.cf<2.6&&g.t>MG_CD+10){ctx.strokeStyle='rgba(255,40,40,'+(0.35+0.3*Math.abs(Math.sin(g.t*0.2)))+')';ctx.lineWidth=10;ctx.strokeRect(0,0,W,H)}
     }
     for(let i=0;i<4;i++){
       const px=padX(i);
@@ -380,7 +381,7 @@ function mgCreateCherry(seed){
   g.update=function(){
     g.t++;mgFx(g);
     if(g.done){g.endT++;return}
-    if(g.t<=120)return;
+    if(g.t<=MG_CD)return;
     g.ft++;
     if(g.phase==='spin'){
       g.timeLeft--;mgTick(g.timeLeft);
@@ -538,7 +539,7 @@ function mgCreateCherry(seed){
       const shk=g.red>20?Math.sin(g.t*2)*3:0;
       drawCherry(CX+shk,CY,1.3+pw*0.2,g.ang,pw>0.8?0.5:0);
       if(g.dizzy>0){for(let i=0;i<4;i++){const a=g.t*0.15+i*1.57;mgStar(CX+Math.cos(a)*70,CY-110+Math.sin(a)*14,9,'#ffd23f')}}
-      if(mi.pdown&&g.t>120){mgCircle(mi.px,mi.py,9,'#fff',3)}
+      if(mi.pdown&&g.t>MG_CD){mgCircle(mi.px,mi.py,9,'#fff',3)}
       // gauge with red zone
       rr(180,396,440,26,13);ctx.fillStyle='#fff';ctx.fill();ctx.lineWidth=4;ctx.strokeStyle=OUT;ctx.stroke();
       if(pw>0.01){
@@ -554,7 +555,7 @@ function mgCreateCherry(seed){
       if(tl>0){rr(183,61,Math.max(10,434*tl),8,4);ctx.fillStyle=g.timeLeft<=180?'#ff5a5a':'#4aa8ff';ctx.fill()}
       outlinedText((g.round+1)+'かいめ / 2かい   のこり '+Math.ceil(Math.max(0,g.timeLeft)/60)+'びょう',400,92,16,'#fff',OUT,4);
       outlinedText('ぜんぶで '+g.total+'m',90,28,20,'#fff');
-      if(g.t>120&&g.act<20)outlinedText('さくらんぼの まわりを ぐるぐる なぞろう！',400,350,18,'#fff',OUT,5);
+      if(g.t>MG_CD&&g.act<20)outlinedText('さくらんぼの まわりを ぐるぐる なぞろう！',400,350,18,'#fff',OUT,5);
       else if(g.act>=20)outlinedText(g.red>20?'まわしすぎ ちゅうい！ はなして！':'はなして とばす！ (Xキー) まっかで ボーナス',400,350,16,g.red>20?'#ff6a6a':'#fff',OUT,5);
       if(g.timeLeft>0&&g.timeLeft<=300)mgVignette(g,g.timeLeft);
       mgDrawFx(g);
@@ -569,7 +570,7 @@ function mgCreateCherry(seed){
 /* 3. dodge                                                            */
 /* ------------------------------------------------------------------ */
 function mgCreateDodge(seed){
-  const FX0=30,FX1=770,FY0=50,FY1=430,TOTAL=1800,TH=[450,800,1200];
+  const FX0=30,FX1=770,FY0=50,FY1=430,TOTAL=3000,TH=[760,1360,2040];
   const g=mgBase('よけろ！ボールシュート',seed);
   const ri=mgRng(g.seed+5);
   g.px=330;g.py=240;g.vx=0;g.vy=0;g.lives=3;g.inv=0;g.shield=0;g.balls=[];g.bombs=[];g.items=[];
@@ -603,7 +604,7 @@ function mgCreateDodge(seed){
   g.update=function(){
     g.t++;mgFx(g);
     if(g.done){g.endT++;return}
-    if(g.t<=120){g.lpx=mi.px;g.lpy=mi.py;return}
+    if(g.t<=MG_CD){g.lpx=mi.px;g.lpy=mi.py;return}
     g.ft++;
     const left=TOTAL-g.ft,dbl=mgDbl(left);
     mgTick(left);
@@ -727,7 +728,7 @@ function mgCreateDodge(seed){
 /* 4. archery                                                          */
 /* ------------------------------------------------------------------ */
 function mgCreateArchery(seed){
-  const BX=100,BY=330,TOTAL=1800,GRAV=0.17,VK=0.13,MAXPULL=110,GROUND=400,TH=[400,900,1600];
+  const BX=100,BY=330,TOTAL=3000,GRAV=0.17,VK=0.13,MAXPULL=110,GROUND=400,TH=[680,1530,2720];
   const lanesX=[470,590,710],lanesV=[0.7,1.0,1.3];
   const g=mgBase('まとあてアーチェリー',seed);
   g.pts=0;g.arrow=null;g.reload=0;g.targets=[];g.aim=false;g.pvx=0;g.pvy=0;g.ang=22;g.charge=0;g.charging=false;g.cdir=1;g.pull=0;
@@ -755,7 +756,7 @@ function mgCreateArchery(seed){
   g.update=function(){
     g.t++;mgFx(g);
     if(g.done){g.endT++;return}
-    if(g.t<=120)return;
+    if(g.t<=MG_CD)return;
     g.ft++;
     const left=TOTAL-g.ft;mgTick(left);
     g.windNow=windAt(g.ft);
@@ -863,7 +864,7 @@ function mgCreateArchery(seed){
         if(i%3===2){ctx.globalAlpha=1-i/40;mgCircle(x,y,3,'#fff',1.5);ctx.globalAlpha=1}
         if(y>GROUND)break;
       }
-    }else if(!g.arrow&&g.t>120){
+    }else if(!g.arrow&&g.t>MG_CD){
       ctx.globalAlpha=0.5;const ha=-g.ang*Math.PI/180;
       mgCircle(BX+40*Math.cos(ha),BY+40*Math.sin(ha),3,'#fff',1.5);ctx.globalAlpha=1;
     }
@@ -914,7 +915,7 @@ function mgCreateArchery(seed){
 /* 5. coin grab                                                        */
 /* ------------------------------------------------------------------ */
 function mgCreateCoin(seed){
-  const FX0=30,FX1=770,FY0=56,FY1=430,TOTAL=1800,TH=[450,900,1500];
+  const FX0=30,FX1=770,FY0=56,FY1=430,TOTAL=3000,TH=[760,1530,2550];
   const g=mgBase('コインゲット！',seed);
   g.px=400;g.py=250;g.vx=0;g.vy=0;g.face=1;g.lpx=null;g.lpy=null;g.stun=0;g.mag=0;g.combo=0;g.comT=0;g.pts=0;g.objs=[];g.evT=30;g.evN=0;g.got=0;g.maxCombo=0;
   function mult(){return Math.min(5,1+Math.floor(g.combo/5))}
@@ -936,7 +937,7 @@ function mgCreateCoin(seed){
   g.update=function(){
     g.t++;mgFx(g);
     if(g.done){g.endT++;return}
-    if(g.t<=120){g.lpx=mi.px;g.lpy=mi.py;return}
+    if(g.t<=MG_CD){g.lpx=mi.px;g.lpy=mi.py;return}
     g.ft++;
     const left=TOTAL-g.ft,dbl=mgDbl(left);
     mgTick(left);
@@ -1038,13 +1039,13 @@ function mgCreateCoin(seed){
 /* 6. rhythm tap                                                       */
 /* ------------------------------------------------------------------ */
 function mgCreateTap(seed){
-  const LX=180,LW=110,HIT=340,TOP=66,FALL=95,TOTAL=1860,TH=[2500,4800,7000];
+  const LX=180,LW=110,HIT=340,TOP=66,FALL=95,TOTAL=3100,TH=[4250,8160,11900];
   const LCOL=['#ff6a8a','#ffb340','#5ad0ff','#a98bff'],ADIR=[0,3,2,1]; // lanes: left, down, up, right
   const g=mgBase('リズムタップ',seed);
   g.notes=[];g.pts=0;g.combo=0;g.maxCombo=0;g.flash=[0,0,0,0];g.counts=[0,0,0,0];g.pulse=0;
   {
     let prev=-1;
-    for(let k=0,tt=100;tt<1700;k++,tt+=14){
+    for(let k=0,tt=100;tt<2950;k++,tt+=14){
       const sec=tt/60,r1=g.rng(),r2=g.rng(),r3=g.rng();
       const on=k%2===0;
       const pr=on?0.55+0.3*Math.min(1,sec/25):(sec<6?0:0.12+0.4*Math.min(1,(sec-6)/22));
@@ -1069,7 +1070,7 @@ function mgCreateTap(seed){
   g.update=function(){
     g.t++;mgFx(g);
     if(g.done){g.endT++;return}
-    if(g.t<=120)return;
+    if(g.t<=MG_CD)return;
     g.ft++;
     const left=TOTAL-g.ft,dbl=mgDbl(left);mgTick(left);
     for(let i=0;i<4;i++)if(g.flash[i]>0)g.flash[i]--;
@@ -1159,7 +1160,7 @@ function mgCreateTap(seed){
 /* 7. stack                                                            */
 /* ------------------------------------------------------------------ */
 function mgCreateStack(seed){
-  const BH=26,FLOOR=410,TOTAL=1800,AMP=170,CX=400,TH=[400,1200,3000];
+  const BH=26,FLOOR=410,TOTAL=3000,AMP=170,CX=400,TH=[680,2040,5100];
   const g=mgBase('ぐらぐらスタック',seed);
   g.tower=[{x:CX,w:200,gold:false,hue:200,drop:0,perfect:0}];
   g.count=0;g.combo=0;g.pts=0;g.cur=null;g.spawnT=0;g.falling=[];g.cam=0;g.over=false;g.overT=0;g.bestCombo=0;
@@ -1210,7 +1211,7 @@ function mgCreateStack(seed){
   g.update=function(){
     g.t++;mgFx(g);
     if(g.done){g.endT++;return}
-    if(g.t<=120)return;
+    if(g.t<=MG_CD)return;
     g.ft++;
     const left=TOTAL-g.ft;mgTick(left);
     const tcam=Math.max(0,(g.tower.length-6)*BH);
@@ -1269,15 +1270,15 @@ function mgCreateStack(seed){
 /* 8. whack                                                            */
 /* ------------------------------------------------------------------ */
 function mgCreateWhack(seed){
-  const TOTAL=1800,TH=[500,1200,2500];
+  const TOTAL=3000,TH=[850,2040,4250];
   const HX=[230,400,570],HY=[205,310,415];
   const g=mgBase('ぽこぽこモグラ',seed);
   g.pts=0;g.combo=0;g.comT=0;g.maxCombo=0;g.stun=0;g.cur=4;g.kb=false;g.hammer=null;g.sched=[];g.got=0;g.bonks=0;
   {
     const busy=[0,0,0,0,0,0,0,0,0];
     let tt=50;
-    while(tt<1780){
-      const pr=tt/1800,r1=g.rng(),r2=g.rng(),r3=g.rng(),r4=g.rng();
+    while(tt<2980){
+      const pr=tt/3000,r1=g.rng(),r2=g.rng(),r3=g.rng(),r4=g.rng();
       let ok=-1;const h0=Math.floor(r1*9);
       for(let k=0;k<9;k++){const h=(h0+k)%9;if(busy[h]<=tt){ok=h;break}}
       const dur=Math.round(78-38*pr+r4*10);
@@ -1318,7 +1319,7 @@ function mgCreateWhack(seed){
   g.update=function(){
     g.t++;mgFx(g);
     if(g.done){g.endT++;return}
-    if(g.t<=120)return;
+    if(g.t<=MG_CD)return;
     g.ft++;
     const left=TOTAL-g.ft;mgTick(left);
     if(g.stun>0)g.stun--;
@@ -1382,7 +1383,7 @@ function mgCreateWhack(seed){
       for(let c=0;c<3;c++)drawHole(r*3+c);
       for(const m of g.sched)if(Math.floor(m.hole/3)===r&&m.t<=g.ft&&g.ft<=m.t+m.dur+10)drawMole(m);
     }
-    if(g.kb&&g.t>120){const x=hx(g.cur),y=hy(g.cur);ctx.beginPath();ctx.ellipse(x,y-24,64,52,0,0,6.3);ctx.lineWidth=4;ctx.strokeStyle='#ffffff';ctx.stroke()}
+    if(g.kb&&g.t>MG_CD){const x=hx(g.cur),y=hy(g.cur);ctx.beginPath();ctx.ellipse(x,y-24,64,52,0,0,6.3);ctx.lineWidth=4;ctx.strokeStyle='#ffffff';ctx.stroke()}
     if(g.hammer){
       const x=hx(g.hammer.h),y=hy(g.hammer.h)-60,k=g.hammer.t/10;
       ctx.save();ctx.translate(x+30,y-20+(1-k)*10);ctx.rotate(-0.8+(1-k)*1.2);
@@ -1406,7 +1407,7 @@ function mgCreateWhack(seed){
 /* 9. しんけいすいじゃく (メモリー)                                    */
 /* ------------------------------------------------------------------ */
 function mgCreateMemory(seed){
-  const TOTAL=2700,TH=[500,1400,2800];
+  const TOTAL=4200,TH=[800,2200,4400];
   const BOARDS=[[4,3],[4,4],[5,4],[6,4]];
   const FACES=['🍎','🍌','🍇','🍓','🍒','🍉','🍋','🥕','🍄','⭐','🐱','🐶','🐸','🐰'];
   const BACKS=['#7ac0ff','#ff9ecb','#9be88a','#ffd36a'];
@@ -1424,7 +1425,7 @@ function mgCreateMemory(seed){
     const arr=[];for(let k=0;k<n;k++){arr.push(idx[k]);arr.push(idx[k])}
     for(let i=arr.length-1;i>0;i--){const j=Math.floor(g.rng()*(i+1));const t=arr[i];arr[i]=arr[j];arr[j]=t}
     g.cards=arr.map(function(f){return {f:f,up:false,flip:1,vanish:0,m:false}});
-    g.peek=100+g.bi*15;g.sel=[];g.lock=0;g.cur=0;g.nextT=0;
+    g.peek=270+g.bi*40;g.peekMax=g.peek;g.sel=[];g.lock=0;g.cur=0;g.nextT=0;
   }
   newBoard();
   function cx(i){return g.ox+(i%g.cols)*g.cw+g.cw/2}
@@ -1455,7 +1456,7 @@ function mgCreateMemory(seed){
   g.update=function(){
     g.t++;mgFx(g);
     if(g.done){g.endT++;return}
-    if(g.t<=120)return;
+    if(g.t<=MG_CD)return;
     g.ft++;
     const left=TOTAL-g.ft;mgTick(left);
     if(g.peek>0){
@@ -1500,12 +1501,12 @@ function mgCreateMemory(seed){
         ctx.fillStyle='rgba(255,255,255,0.55)';ctx.font='bold '+Math.floor(h*0.5)+'px '+FONT;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('?',0,3)}
       ctx.restore();
     }
-    if(g.kb&&g.t>120&&g.cards[g.cur]&&!g.cards[g.cur].m){ctx.strokeStyle='#ffffff';ctx.lineWidth=5;rr(cx(g.cur)-g.cw/2+1,cy(g.cur)-g.ch/2+1,g.cw-2,g.ch-2,14);ctx.stroke()}
+    if(g.kb&&g.t>MG_CD&&g.cards[g.cur]&&!g.cards[g.cur].m){ctx.strokeStyle='#ffffff';ctx.lineWidth=5;rr(cx(g.cur)-g.cw/2+1,cy(g.cur)-g.ch/2+1,g.cw-2,g.ch-2,14);ctx.stroke()}
     ctx.restore();
     mgDrawFx(g);
     outlinedText(g.pts+'てん',90,28,24,'#fff');
     mgTimerHUD(g,TOTAL-g.ft,730,28,true);
-    if(g.peek>0&&g.t>120)outlinedText('おぼえて！ '+Math.ceil(g.peek/60),400,62,22,'#ffd23f',OUT,5);
+    if(g.peek>0&&g.t>MG_CD){outlinedText('おぼえて！',320,62,24,'#ffd23f',OUT,5);outlinedText(String(Math.ceil(g.peek/60)),440,62,40,'#ffffff',OUT,6);ctx.fillStyle='#ffd23f';ctx.fillRect(250,86,300*g.peek/(g.peekMax||1),6)}
     else if(g.combo>=2)outlinedText(g.combo+'れんぞく x'+Math.min(5,g.combo),400,H-22,22,'#ffd23f',OUT,5);
     mgTitle(g);mgCountdown(g.t,'おなじ ならびを 2まい そろえよう！ はじめに ちょっとだけ みせるよ。れんぞくで ポイントアップ (キー: ◀▶▲▼ + Z)');
     mgEndBanner(g);
@@ -1517,7 +1518,7 @@ function mgCreateMemory(seed){
 /* 10. あいつをさがせ                                                  */
 /* ------------------------------------------------------------------ */
 function mgCreateFind(seed){
-  const TOTAL=1800,TH=[800,2000,4000];
+  const TOTAL=3000,TH=[1360,3400,6800];
   const CC=['#ff8a8a','#7ad0ff','#ffe066','#9be88a','#c9a0ff','#ffb06a'];
   const g=mgBase('あいつをさがせ',seed);
   g.round=0;g.pts=0;g.combo=0;g.stun=0;g.chars=[];g.target=null;g.rt=0;g.limit=0;g.found=0;g.miss=0;g.px=400;g.py=270;g.kb=false;g.msgT=0;g.revT=0;
@@ -1571,7 +1572,7 @@ function mgCreateFind(seed){
   g.update=function(){
     g.t++;mgFx(g);
     if(g.done){g.endT++;return}
-    if(g.t<=120)return;
+    if(g.t<=MG_CD)return;
     g.ft++;
     const left=TOTAL-g.ft;mgTick(left);
     if(g.stun>0)g.stun--;
@@ -1616,8 +1617,8 @@ function mgCreateFind(seed){
     outlinedText(g.pts+'てん',90,28,24,'#fff');
     mgTimerHUD(g,TOTAL-g.ft,730,28,true);
     if(g.combo>=2)outlinedText(g.combo+'れんぞく',130,H-22,20,'#ffd23f',OUT,5);
-    if(g.stun>0&&g.t>120)outlinedText('おっと！',400,H-24,24,'#ff6a6a',OUT,5);
-    if(g.kb&&g.t>120){ctx.strokeStyle='#ff5a7a';ctx.lineWidth=3;ctx.beginPath();ctx.arc(g.px,g.py,16,0,6.3);ctx.moveTo(g.px-22,g.py);ctx.lineTo(g.px+22,g.py);ctx.moveTo(g.px,g.py-22);ctx.lineTo(g.px,g.py+22);ctx.stroke()}
+    if(g.stun>0&&g.t>MG_CD)outlinedText('おっと！',400,H-24,24,'#ff6a6a',OUT,5);
+    if(g.kb&&g.t>MG_CD){ctx.strokeStyle='#ff5a7a';ctx.lineWidth=3;ctx.beginPath();ctx.arc(g.px,g.py,16,0,6.3);ctx.moveTo(g.px-22,g.py);ctx.lineTo(g.px+22,g.py);ctx.moveTo(g.px,g.py-22);ctx.lineTo(g.px,g.py+22);ctx.stroke()}
     mgTitle(g);mgCountdown(g.t,'うえに でている キャラと ぜんぶ おなじ子を タップ！ いろと かざりが おなじ子は 1にんだけ (キー: ◀▶▲▼ + Z)');
     mgEndBanner(g);
   };
@@ -1627,7 +1628,7 @@ function mgCreateFind(seed){
 const MINIGAMES=[
   {id:'hop',name:'ぴょんぴょんレース',desc:'おちる いたを ダッシュで わたりきれ！ ターボで がんばれ',help:'やじるしと おなじ ボタンを れんぞくで！ ギリギリで ボーナス',create:function(seed){return mgCreateHop(seed)}},
   {id:'cherry',name:'クルクルチェリー',desc:'さくらんぼを ぐるぐる まわして 2かい なげて とおくへ！',help:'ぐるぐる なぞって はなす！ おちる ときに タップで バウンス',create:function(seed){return mgCreateCherry(seed)}},
-  {id:'dodge',name:'よけろ！ボールシュート',desc:'ボールを 30びょう よけつづけよう ★で ポイント ゲット',help:'ゆびで うごいて よけろ！ ★と ギリギリで ボーナス (キー: ◀▶▲▼)',create:function(seed){return mgCreateDodge(seed)}},
+  {id:'dodge',name:'よけろ！ボールシュート',desc:'ボールを 50びょう よけつづけよう ★で ポイント ゲット',help:'ゆびで うごいて よけろ！ ★と ギリギリで ボーナス (キー: ◀▶▲▼)',create:function(seed){return mgCreateDodge(seed)}},
   {id:'archery',name:'まとあてアーチェリー',desc:'かぜを よんで まとを ねらいうち！ ともだちには あてないで',help:'うしろに ひっぱって はなす！ ど真ん中は 2ばい (キー: ▲▼ かくど / スペース)',create:function(seed){return mgCreateArchery(seed)}},
   {id:'coin',name:'コインゲット！',desc:'アリーナの コインを あつめまくれ！ ばくだんに ちゅうい',help:'ゆびで うごいて コインを ゲット！ れんぞくで ポイントが ふえる (キー: ◀▶▲▼)',create:function(seed){return mgCreateCoin(seed)}},
   {id:'tap',name:'リズムタップ',desc:'おちてくる おとを タイミングよく タップ！',help:'おとが せんに かさなったら そのレーンを タップ！ (キー: ◀▼▲▶)',create:function(seed){return mgCreateTap(seed)}},
