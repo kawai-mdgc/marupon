@@ -210,7 +210,8 @@ function mgCreateHop(seed){
     const pt=g.ft,sec=pt/60;
     g.cf+=(1.5+0.1*sec)/60;
     let press=-1;
-    if(mi.pl)press=0;else if(mi.pr)press=1;else if(mi.pu)press=2;else if(mi.pd)press=3;
+    if(mi.k&&(mi.k[0]||mi.k[1]||mi.k[2]||mi.k[3]))press=PADS[mi.k.findIndex(function(v){return v})];
+    else if(mi.pl)press=0;else if(mi.pr)press=1;else if(mi.pu)press=2;else if(mi.pd)press=3;
     else if(mi.ppress){for(let i=0;i<4;i++)if(mgIn(mi.px,mi.py,padX(i),PAD_Y,PAD_W,PAD_H)){press=PADS[i];break}}
     for(let i=0;i<4;i++){
       const r=g.racers[i];
@@ -344,9 +345,10 @@ function mgCreateHop(seed){
       const pressed=mi.pdown&&mgIn(mi.px,mi.py,px,PAD_Y,PAD_W,PAD_H);
       rr(px,PAD_Y+(pressed?4:0),PAD_W,PAD_H-(pressed?4:0),16);
       ctx.fillStyle=pressed?'#ffe27a':'#ffffff';ctx.fill();ctx.lineWidth=4;ctx.strokeStyle=OUT;ctx.stroke();
-      mgArrow(px+PAD_W/2,PAD_Y+PAD_H/2+(pressed?4:0),20,PADS[i],'#ff8fa8');
+      mgArrow(px+PAD_W/2-14,PAD_Y+PAD_H/2+(pressed?4:0),20,PADS[i],'#ff8fa8');
+      outlinedText(['D','F','J','K'][i],px+PAD_W/2+34,PAD_Y+PAD_H/2+(pressed?4:0),26,'#fff',OUT,5);
     }
-    mgTitle(g);mgCountdown(g.t,'でてくる やじるしと おなじ ボタン！ れんぞくで ターボ、ギリギリで ボーナス');
+    mgTitle(g);mgCountdown(g.t,'あたまの うえに でる やじるしと おなじ ボタンを おそう！ れんぞくで ターボ。キーボードは D F J K (◀▼▲▶ でも OK)');
     mgEndBanner(g);
   };
   return g;
@@ -1087,7 +1089,8 @@ function mgCreateTap(seed){
     for(let i=0;i<4;i++)if(g.flash[i]>0)g.flash[i]--;
     if(g.pulse>0)g.pulse--;
     const taps=[];
-    if(mi.pl)taps.push(0);if(mi.pd)taps.push(1);if(mi.pu)taps.push(2);if(mi.pr)taps.push(3);
+    if(mi.k&&(mi.k[0]||mi.k[1]||mi.k[2]||mi.k[3])){for(let i=0;i<4;i++)if(mi.k[i])taps.push(i)}
+    else{if(mi.pl)taps.push(0);if(mi.pd)taps.push(1);if(mi.pu)taps.push(2);if(mi.pr)taps.push(3)}
     if(mi.ppress&&mi.px>=LX&&mi.px<LX+4*LW&&mi.py>=TOP-10)taps.push(Math.floor((mi.px-LX)/LW));
     for(const lane of taps){
       g.flash[lane]=8;
@@ -1155,6 +1158,7 @@ function mgCreateTap(seed){
       const x=LX+i*LW,pressed=g.flash[i]>0;
       rr(x+6,372+(pressed?4:0),LW-12,56-(pressed?4:0),14);ctx.fillStyle=pressed?'#ffffff':LCOL[i];ctx.fill();ctx.lineWidth=4;ctx.strokeStyle=OUT;ctx.stroke();
       mgArrow(x+LW/2,400+(pressed?4:0),15,ADIR[i],pressed?LCOL[i]:'#ffffff');
+      outlinedText(['D','F','J','K'][i],x+LW/2,430,15,'#fff',OUT,4);
     }
     // HUD
     outlinedText(g.pts+'てん',90,28,24,'#fff');
@@ -1637,12 +1641,12 @@ function mgCreateFind(seed){
 }
 
 const MINIGAMES=[
-  {id:'hop',name:'ぴょんぴょんレース',desc:'おちる いたを ダッシュで わたりきれ！ ターボで がんばれ',help:'やじるしと おなじ ボタンを れんぞくで！ ギリギリで ボーナス',create:function(seed){return mgCreateHop(seed)}},
+  {id:'hop',name:'ぴょんぴょんレース',desc:'おちる いたを ダッシュで わたりきれ！ ターボで がんばれ',help:'あたまの うえの やじるしと おなじ ボタンを れんぞくで おそう！ ギリギリで ボーナス (キー: D F J K か ◀▼▲▶)',create:function(seed){return mgCreateHop(seed)}},
   {id:'cherry',name:'クルクルチェリー',desc:'さくらんぼを ぐるぐる まわして 2かい なげて とおくへ！',help:'ぐるぐる なぞって はなす！ おちる ときに タップで バウンス',create:function(seed){return mgCreateCherry(seed)}},
   {id:'dodge',name:'よけろ！ボールシュート',desc:'ボールを 50びょう よけつづけよう ★で ポイント ゲット',help:'ゆびで うごいて よけろ！ ★と ギリギリで ボーナス (キー: ◀▶▲▼)',create:function(seed){return mgCreateDodge(seed)}},
   {id:'archery',name:'まとあてアーチェリー',desc:'かぜを よんで まとを ねらいうち！ ともだちには あてないで',help:'うしろに ひっぱって はなす！ ど真ん中は 2ばい (キー: ▲▼ かくど / スペース)',create:function(seed){return mgCreateArchery(seed)}},
   {id:'coin',name:'コインゲット！',desc:'アリーナの コインを あつめまくれ！ ばくだんに ちゅうい',help:'ゆびで うごいて コインを ゲット！ れんぞくで ポイントが ふえる (キー: ◀▶▲▼)',create:function(seed){return mgCreateCoin(seed)}},
-  {id:'tap',name:'リズムタップ',desc:'おちてくる おとを タイミングよく タップ！',help:'おとが せんに かさなったら そのレーンを タップ！ (キー: ◀▼▲▶)',create:function(seed){return mgCreateTap(seed)}},
+  {id:'tap',name:'リズムタップ',desc:'おちてくる おとを タイミングよく タップ！',help:'おとが せんに かさなったら そのレーンを タップ！ (キー: D F J K か ◀▼▲▶)',create:function(seed){return mgCreateTap(seed)}},
   {id:'stack',name:'ぐらぐらスタック',desc:'ゆれる ブロックを ぴったり つみあげろ！',help:'タップで おとす！ ぴったりで れんぞくボーナス、はずすと くずれる',create:function(seed){return mgCreateStack(seed)}},
   {id:'whack',name:'ぽこぽこモグラ',desc:'でてくる モグラを たたけ！ キラキラは ボーナス',help:'モグラを タップ！ × の モグラは たたかない (キー: ◀▶▲▼ + Z)',create:function(seed){return mgCreateWhack(seed)}},
   {id:'memory',name:'しんけいすいじゃく',desc:'おなじ カードを 2まい そろえよう！ れんぞくで ポイントアップ',help:'おなじ ならびを 2まい そろえよう！ はじめに ちょっとだけ みせるよ (キー: ◀▶▲▼ + Z)',create:function(seed){return mgCreateMemory(seed)}},

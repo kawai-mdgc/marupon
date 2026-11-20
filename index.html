@@ -72,7 +72,8 @@ const keys={left:0,right:0,jump:0,run:0,fire:0,down:0,jumpPressed:0,firePressed:
 const KMAP={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',
   Space:'jump',ArrowUp:'jump',KeyZ:'jump',KeyW:'jump',
   ShiftLeft:'run',ShiftRight:'run',KeyX:'run',KeyC:'fire',ArrowDown:'down',KeyS:'down'};
-function pauseGame(){if(state==='play'){state='pause';keys.left=keys.right=keys.jump=keys.run=keys.fire=0;keys.jumpPressed=keys.firePressed=0}}
+function pauseGame(){if(state==='miniplay'&&!netOn&&mgame&&!mgame.done){state='minipause';for(const k in raw)raw[k]=0;ptr.down=false;ptr.press=false;return}
+  if(state==='play'){state='pause';keys.left=keys.right=keys.jump=keys.run=keys.fire=0;keys.jumpPressed=keys.firePressed=0}}
 function resumeGame(){if(state==='pause'){state='play';keys.left=keys.right=keys.jump=keys.run=keys.fire=0;keys.jumpPressed=keys.firePressed=0}}
 function press(k){
   if(k==='jump'&&!keys.jump)keys.jumpPressed=1;
@@ -97,6 +98,8 @@ function mpLive(){return mgame&&mgame.live!==undefined?mgame.live:(mgame?mgame.s
 function refreshMi(){
   const cur={l:raw.ArrowLeft||raw.KeyA,r:raw.ArrowRight||raw.KeyD,u:raw.ArrowUp||raw.KeyW,d:raw.ArrowDown||raw.KeyS,a:raw.Space||raw.KeyZ||raw.Enter,b:raw.KeyX||raw.ShiftLeft||raw.ShiftRight};
   for(const k in cur){const v=!!cur[k];mi['p'+k]=v&&!pk[k];mi[k]=v;pk[k]=v}
+  if(!mi.k)mi.k=[false,false,false,false];
+  ['KeyD','KeyF','KeyJ','KeyK'].forEach((c,i)=>{const v=!!raw[c];mi.k[i]=v&&!pk['k'+i];pk['k'+i]=v});
   mi.px=ptr.x;mi.py=ptr.y;mi.pdown=ptr.down;mi.ppress=ptr.press;mi.prel=ptr.rel;ptr.press=false;ptr.rel=false;
 }
 function doJoin(){netOn=true;netMsg='';Net.join(joinCode);state='netjoin'}
@@ -138,6 +141,12 @@ addEventListener('keydown',e=>{
     else if(e.code==='Escape')leaveMini('select');
     e.preventDefault();return;
   }
+  if(state==='minipause'){
+    if(e.code==='KeyP'||e.code==='Escape'||e.code==='Enter'||e.code==='Space'){state='miniplay';for(const k in raw)raw[k]=0;ptr.down=false;ptr.press=false}
+    else if(e.code==='KeyM'||e.code==='KeyQ')openMini();
+    e.preventDefault();return;
+  }
+  if(state==='miniplay'&&(e.code==='Escape'||e.code==='KeyP')){if(!netOn)pauseGame();e.preventDefault();return}
   if(state==='miniplay'||state==='miniresult'){
     if(e.code==='Escape'){if(netOn)leaveNet();openMini()}
     else if(state==='miniresult'&&(e.code==='Enter'||e.code==='Space'))keys.jumpPressed=1;
@@ -221,7 +230,14 @@ cv.addEventListener('pointerdown',e=>{
     if(px<110&&py<44)leaveMini('select');
     return;
   }
-  if(state==='miniplay')return;
+  if(state==='minipause'){
+    if(py>=260&&py<=330)openMini();else{state='miniplay';for(const k in raw)raw[k]=0;ptr.down=false;ptr.press=false}
+    return;
+  }
+  if(state==='miniplay'){
+    if(!netOn&&px>=740&&py<=44){ptr.press=false;ptr.down=false;pauseGame()}
+    return;
+  }
   if(state==='miniresult'){
     if(netOn){if(px<W/2){if(Net.S.isHost&&Net.S.phase==='result')Net.backToLobby()}else{leaveNet();openMini()}}
     else if(px<W/2)startMini(mSel);else openMini();
@@ -522,6 +538,7 @@ function update(){
     keys.jumpPressed=0;keys.firePressed=0;return;
   }
   if(state==='mini'){if(keys.jumpPressed)startMini(mSel);keys.jumpPressed=0;keys.firePressed=0;return}
+  if(state==='minipause'){keys.jumpPressed=0;keys.firePressed=0;return}
   if(state==='miniplay'){
     refreshMi();
     if(!netOn&&mgame.t<MG_RULE&&mgame.t>8&&(mi.ppress||mi.pa))mgame.t=MG_RULE;
@@ -1440,7 +1457,17 @@ function draw(){
   if(state==='net'){drawNetMenu();return}
   if(state==='netjoin'){drawNetJoin();return}
   if(state==='netlobby'||state==='netwait'){drawNetLobby();return}
-  if(state==='miniplay'){mgame.draw();if(netOn)drawMpBoard();return}
+  if(state==='miniplay'||state==='minipause'){
+    mgame.draw();if(netOn)drawMpBoard();
+    else{ctx.fillStyle='rgba(255,255,255,.85)';ctx.beginPath();ctx.arc(772,22,15,0,7);ctx.fill();ctx.strokeStyle=OUT;ctx.lineWidth=3;ctx.stroke();ctx.fillStyle=OUT;ctx.fillRect(766,14,4,16);ctx.fillRect(775,14,4,16)}
+    if(state==='minipause'){
+      ctx.fillStyle='rgba(20,10,40,.66)';ctx.fillRect(0,0,W,H);
+      outlinedText('いちじていし',W/2,150,50,'#fff','#e8344e',9);
+      outlinedText('▶ つづける  (P / Esc / タップ)',W/2,220,24,frame%60<40?'#ffe45c':'#fff');
+      outlinedText('ミニゲームえらびへ  (M / ここをタップ)',W/2,296,20,'#fff',OUT,5);
+    }
+    return;
+  }
   if(state==='miniresult'){mgame.draw();if(netOn)drawMpResult();else drawMiniResult();return}
   if(state==='title'||state==='select'){
     if(state==='select'){drawSelect();return}
