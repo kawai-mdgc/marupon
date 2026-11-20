@@ -52,7 +52,7 @@ const zSpooky=(item,k)=>function(L){L.flat(14);L.row(3,8,'?'+item+'?');L.ghost(8
 const zBats=(item,k)=>function(L){L.flat(14);L.bat(5,4);L.row(8,8,'?'+item+'?');L.flat(14);L.bat(4,4);L.bat(9,4);L.coins(5,10,4);_ex(L,k,10)};
 
 // ---- 縦(のぼり)ステージ ----
-//  { tower:{rows:54} } のステージは「うえへ のぼる」。ゆかから みずが せまってくる!
+//  { tower:{rows:54} } のステージは「うえへ のぼる」。うえへ のぼって ゴールを めざす
 //  cols=足場の左はし(左から何マス目) 3マスずつ高くなる / len=足場の長さ
 //  coins/spikes/fly/bat/ghost/cannon = 何こごとに置くか   items=[[足場番号,'E']..]
 function buildTower(L,o){
@@ -71,7 +71,7 @@ function buildTower(L,o){
   (o.items||[]).forEach(([i,ch])=>{const c=o.cols[i],nxt=o.cols[i+1]===undefined?c:o.cols[i+1],far=nxt>c?c:c+len-1;L.tblock(far,dh*(i+1),ch)});
   L.tcheck(o.cols[Math.floor(n/2)]+1,dh*(Math.floor(n/2)+1));
   const gh=dh*(n+1),lc=o.cols[n-1];if(lc>=12){L.tplat(17,gh,7);L.tgoal(20,gh)}else{L.tplat(12,gh,10);L.tgoal(19,gh)}
-  L.tlava(o.delay||300,o.rise,o.hazard);
+  if(o.rise)L.tlava(o.delay||300,o.rise,o.hazard);   // (今は どのステージも つかっていません)
 }
 const _zz=[8,14,19,13,7,11,17,20,14,8,12,17,20,14,8,13];
 const _mir=a=>a.map(c=>21-c);
@@ -156,8 +156,8 @@ const STAGES=[
  }},
  // 6 ------------------------------------------------ 動く足場
  // 6 ------------------------------------------------ のぼりステージ
- {name:'ゆきのとう',theme:'snow',news:'うえへ のぼれ! みずが せまってくる',tower:{rows:54},build(L){
-  buildTower(L,{cols:_zz,coins:1,spikes:5,fly:4,rise:.42,hazard:'water',items:[[3,'E'],[9,'D']]});
+ {name:'ゆきのとう',theme:'snow',news:'うえへ のぼれ! てっぺんの はたを めざそう',tower:{rows:54},build(L){
+  buildTower(L,{cols:_zz,coins:1,spikes:5,fly:4,items:[[3,'E'],[9,'D']]});
  }},
  {name:'よるのもり',news:'おばけ(みているとうごかない)',theme:'night',build(L){
   L.flat(10); L.hopper(7);
@@ -246,7 +246,7 @@ const STAGES=[
  // 12
  // 12 -----------------------------------------------
  {name:'ふくろうのもり',theme:'forest',news:'コウモリが さがっている',tower:{rows:54},build(L){
-  buildTower(L,{cols:_mir(_zz),coins:1,bat:3,rise:.46,hazard:'water',items:[[4,'J']]});
+  buildTower(L,{cols:_mir(_zz),coins:1,bat:3,items:[[4,'J']]});
  }},
  {name:'さばくのよる',theme:'desert',build(L){
   L.flat(12); L.walker(6); L.hopper(9);
@@ -275,8 +275,8 @@ const STAGES=[
  }},
  // 15
  // 15 -----------------------------------------------
- {name:'かざんのとう',theme:'volcano',news:'ようがんが のぼってくる',tower:{rows:54},build(L){
-  buildTower(L,{cols:_zz,spikes:3,cannon:4,fly:5,rise:.52,hazard:'lava',items:[[5,'Z'],[10,'N']]});
+ {name:'かざんのとう',theme:'volcano',news:'たいほうと トゲに ちゅうい!',tower:{rows:54},build(L){
+  buildTower(L,{cols:_zz,spikes:3,cannon:4,fly:5,items:[[5,'Z'],[10,'N']]});
  }},
  {name:'ほしぞらのみち',theme:'night',build(L){
   L.flat(10); L.flyer(5,8,3);
@@ -321,7 +321,7 @@ const STAGES=[
  // 19
  // 19 -----------------------------------------------
  {name:'おかしのとう',theme:'candy',news:'おばけに ちゅうい',tower:{rows:54},build(L){
-  buildTower(L,{cols:_mir(_zz),coins:1,ghost:3,fly:4,rise:.56,hazard:'poison',items:[[2,'E'],[8,'J'],[12,'D']]});
+  buildTower(L,{cols:_mir(_zz),coins:1,ghost:3,fly:4,items:[[2,'E'],[8,'J'],[12,'D']]});
  }},
  {name:'まおうのおしろ',theme:'volcano',build(L){
   L.flat(10); L.walker(6); L.row(3,8,'?M?');
