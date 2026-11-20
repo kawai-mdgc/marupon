@@ -117,20 +117,31 @@ function mgTimerHUD(g,left,x,y,dbl){
   if(dbl&&left>0&&left<=600)outlinedText('ラスト10びょう！ ポイント2ばい',400,y+30,15+Math.abs(Math.sin(g.t*0.12))*2,'#ffd23f',OUT,4);
   mgVignette(g,left);
 }
-const MG_CD=190;
+const MG_RULE=480,MG_CD=MG_RULE+190;
 function mgTitle(g){
   if(g.t<MG_CD+30){outlinedText(g.title,400,28,22,'#fff')}
 }
+function mgWrap(str,n){const out=[];let cur='';for(const ch of String(str)){cur+=ch;if(cur.length>=n&&/[ 　、。！？)）]/.test(ch)){out.push(cur.trim());cur=''}else if(cur.length>=n+6){out.push(cur);cur=''}}if(cur.trim())out.push(cur.trim());return out}
 function mgCountdown(t,help){
   if(t>=MG_CD+40)return;
-  if(t<MG_CD){
+  if(t<MG_RULE){
+    ctx.fillStyle='rgba(20,10,40,0.62)';ctx.fillRect(0,0,W,H);
+    rr(80,70,640,300,22);ctx.fillStyle='rgba(255,255,255,0.96)';ctx.fill();ctx.lineWidth=5;ctx.strokeStyle=OUT;ctx.stroke();
+    outlinedText('あそびかた',400,108,30,'#ff5a7a','#fff',7);
+    const lines=mgWrap(help,20);
+    lines.slice(0,6).forEach(function(l,k){outlinedText(l,400,166+k*38,24,'#fff',OUT,5)});
+    const net=(typeof netOn!=='undefined'&&netOn);
+    const sec=Math.ceil((MG_RULE-t)/60);
+    outlinedText(net?'みんなで いっしょに はじまるよ！ あと '+sec+'びょう':'タップ / Z で スタート！  (あと '+sec+'びょう)',400,342,t%60<42?20:18,'#ffd23f',OUT,5);
+    return;
+  }
+  const u=t-MG_RULE;
+  if(u<190){
     ctx.fillStyle='rgba(0,0,0,0.18)';ctx.fillRect(0,0,W,H);
-    const n=3-Math.floor(t/60),k=1-(t%60)/60;
-    outlinedText(String(n),400,H/2+30,90+k*40,'#ffd23f');
-    rr(40,64,720,34,17);ctx.fillStyle='rgba(255,255,255,0.92)';ctx.fill();ctx.lineWidth=3;ctx.strokeStyle=OUT;ctx.stroke();
-    outlinedText(help,400,82,15,'#fff',OUT,4);
+    const n=3-Math.floor(u/60),k=1-(u%60)/60;
+    outlinedText(String(Math.max(1,n)),400,H/2+30,90+k*40,'#ffd23f');
   }else{
-    const k=1-(t-MG_CD)/40;
+    const k=1-(u-190)/40;
     outlinedText('スタート！',400,H/2+20,60+k*30,'#7dff6a');
   }
 }

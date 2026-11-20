@@ -524,6 +524,7 @@ function update(){
   if(state==='mini'){if(keys.jumpPressed)startMini(mSel);keys.jumpPressed=0;keys.firePressed=0;return}
   if(state==='miniplay'){
     refreshMi();
+    if(!netOn&&mgame.t<MG_RULE&&mgame.t>8&&(mi.ppress||mi.pa))mgame.t=MG_RULE;
     if(netOn){mgame.remotes=Net.others().map(p=>({name:p.name,live:p.live,done:p.done,score:p.score}));Net.tick()}
     if(!mgame.done){mgame.update();if(netOn)Net.report(mpLive(),false,0,'')}
     else{
@@ -1413,9 +1414,11 @@ function drawSelect(){
     const bob=n===sel?Math.sin(frame*.15)*3:0;
     ctx.save();ctx.translate(0,bob);
     const g=ctx.createLinearGradient(0,y,0,y+h);g.addColorStop(0,th.sky[0]);g.addColorStop(.6,th.sky[1]);g.addColorStop(1,th.sky[2]);
-    ctx.fillStyle=g;rr(x,y,w,h,12);ctx.fill();
-    ctx.fillStyle=th.top;ctx.beginPath();ctx.roundRect(x,y+h-22,w,22,[0,0,12,12]);ctx.fill();
-    ctx.fillStyle=th.dirt;ctx.fillRect(x,y+h-12,w,12);ctx.beginPath();ctx.roundRect(x,y+h-12,w,12,[0,0,12,12]);ctx.fill();
+    ctx.save();rr(x,y,w,h,12);ctx.clip();
+    ctx.fillStyle=g;ctx.fillRect(x,y,w,h);
+    ctx.fillStyle=th.top;ctx.fillRect(x,y+h-22,w,22);
+    ctx.fillStyle=th.dirt;ctx.fillRect(x,y+h-12,w,12);
+    ctx.restore();
     ctx.strokeStyle=n===sel?'#ffe45c':OUT;ctx.lineWidth=n===sel?5:3;rr(x,y,w,h,12);ctx.stroke();
     outlinedText(stageLabel(n),x+w/2,y+44,36,'#fff',OUT,6);
     outlinedText(st.name,x+w/2,y+86,15,'#fff',OUT,4);
