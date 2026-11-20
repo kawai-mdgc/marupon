@@ -1402,6 +1402,228 @@ function mgCreateWhack(seed){
   return g;
 }
 
+/* ------------------------------------------------------------------ */
+/* 9. しんけいすいじゃく (メモリー)                                    */
+/* ------------------------------------------------------------------ */
+function mgCreateMemory(seed){
+  const TOTAL=2700,TH=[500,1400,2800];
+  const BOARDS=[[4,3],[4,4],[5,4],[6,4]];
+  const FACES=['🍎','🍌','🍇','🍓','🍒','🍉','🍋','🥕','🍄','⭐','🐱','🐶','🐸','🐰'];
+  const BACKS=['#7ac0ff','#ff9ecb','#9be88a','#ffd36a'];
+  const g=mgBase('しんけいすいじゃく',seed);
+  g.pts=0;g.combo=0;g.bi=0;g.cards=[];g.sel=[];g.lock=0;g.peek=0;g.cur=0;g.pairs=0;g.kb=false;g.nextT=0;g.clears=0;g.maxCombo=0;
+  function layout(){
+    const b=BOARDS[Math.min(g.bi,BOARDS.length-1)];
+    g.cols=b[0];g.rows=b[1];g.cw=Math.min(112,(W-60)/g.cols);g.ch=Math.min(104,(H-150)/g.rows);
+    g.ox=(W-g.cols*g.cw)/2;g.oy=92+(H-150-g.rows*g.ch)/2;
+  }
+  function newBoard(){
+    layout();
+    const n=g.cols*g.rows/2,idx=FACES.map(function(_,i){return i});
+    for(let i=idx.length-1;i>0;i--){const j=Math.floor(g.rng()*(i+1));const t=idx[i];idx[i]=idx[j];idx[j]=t}
+    const arr=[];for(let k=0;k<n;k++){arr.push(idx[k]);arr.push(idx[k])}
+    for(let i=arr.length-1;i>0;i--){const j=Math.floor(g.rng()*(i+1));const t=arr[i];arr[i]=arr[j];arr[j]=t}
+    g.cards=arr.map(function(f){return {f:f,up:false,flip:1,vanish:0,m:false}});
+    g.peek=100+g.bi*15;g.sel=[];g.lock=0;g.cur=0;g.nextT=0;
+  }
+  newBoard();
+  function cx(i){return g.ox+(i%g.cols)*g.cw+g.cw/2}
+  function cy(i){return g.oy+Math.floor(i/g.cols)*g.ch+g.ch/2}
+  function pick(i,left){
+    const c=g.cards[i];
+    if(!c||c.m||c.up||g.lock>0||g.peek>0||g.nextT>0||g.sel.length>=2)return;
+    c.up=true;g.sel.push(i);sfx.jump();
+    if(g.sel.length===2){
+      const a=g.cards[g.sel[0]],b=g.cards[g.sel[1]];
+      if(a.f===b.f){
+        g.combo++;g.maxCombo=Math.max(g.maxCombo,g.combo);g.pairs++;
+        const gain=100*Math.min(5,g.combo)*mgDbl(left);
+        g.pts+=gain;a.m=b.m=true;a.vanish=b.vanish=22;
+        for(let k=0;k<2;k++){const j=g.sel[k];mgSparkles(g.parts,cx(j),cy(j),12,['#ffd23f','#fff','#ff8aa8'])}
+        mgPop(g,(cx(g.sel[0])+cx(g.sel[1]))/2,Math.min(cy(g.sel[0]),cy(g.sel[1]))-20,'+'+gain+(g.combo>=2?'  '+g.combo+'れんぞく!':''),'#ffd23f',22+Math.min(8,g.combo*2));
+        mgComboSfx(g.combo);g.sel=[];
+        if(g.cards.every(function(x){return x.m})){
+          g.nextT=40;g.clears++;const bonus=300+g.bi*100;g.pts+=bonus;
+          mgPop(g,400,70,'ぜんぶ そろった！ +'+bonus,'#7dff6a',28);sfx.win();
+        }
+      }else{
+        if(g.combo>0)mgPop(g,cx(i),cy(i)-40,'ざんねん','#ffffff',16);
+        g.combo=0;g.lock=42;sfx.bump();
+      }
+    }
+  }
+  g.update=function(){
+    g.t++;mgFx(g);
+    if(g.done){g.endT++;return}
+    if(g.t<=120)return;
+    g.ft++;
+    const left=TOTAL-g.ft;mgTick(left);
+    if(g.peek>0){
+      g.peek--;if(g.peek===0){for(const c of g.cards)c.up=false}
+    }else{
+      if(g.lock>0){g.lock--;if(g.lock===0){for(const k of g.sel)g.cards[k].up=false;g.sel=[]}}
+    }
+    if(g.nextT>0){g.nextT--;if(g.nextT===0){g.bi++;newBoard()}}
+    for(const c of g.cards){
+      const tgt=(c.up||g.peek>0)?1:0;
+      c.flip+=(tgt-c.flip)*0.35;if(Math.abs(tgt-c.flip)<0.02)c.flip=tgt;
+      if(c.vanish>0)c.vanish--;
+    }
+    if(mi.pl||mi.pr||mi.pu||mi.pd){
+      g.kb=true;let c=g.cur%g.cols,r=Math.floor(g.cur/g.cols);
+      if(mi.pl)c=(c+g.cols-1)%g.cols;if(mi.pr)c=(c+1)%g.cols;if(mi.pu)r=(r+g.rows-1)%g.rows;if(mi.pd)r=(r+1)%g.rows;
+      g.cur=r*g.cols+c;
+    }
+    if(mi.pa||mi.pb){g.kb=true;pick(g.cur,left)}
+    else if(mi.ppress){
+      for(let i=0;i<g.cards.length;i++){
+        if(mgIn(mi.px,mi.py,cx(i)-g.cw/2+3,cy(i)-g.ch/2+3,g.cw-6,g.ch-6)){g.kb=false;g.cur=i;pick(i,left);break}
+      }
+    }
+    g.live=g.pts;
+    if(g.ft>=TOTAL)mgFinish(g,g.pts,g.pts+'てん  '+g.pairs+'ペア みつけた！','じかんぎれ！',TH);
+  };
+  g.draw=function(){
+    mgBg('#ffd9ec','#ffb6d9');
+    ctx.fillStyle='rgba(255,255,255,0.18)';for(let i=0;i<8;i++)ctx.fillRect(i*100,0,50,H);
+    mgShakeBegin(g);
+    for(let i=0;i<g.cards.length;i++){
+      const c=g.cards[i];
+      if(c.m&&c.vanish<=0)continue;
+      const x=cx(i),y=cy(i),w=g.cw-8,h=g.ch-8,sc=c.m?c.vanish/22:1;
+      const fx=Math.abs(Math.cos(c.flip*Math.PI)),face=c.flip>0.5;
+      ctx.save();ctx.translate(x,y+(c.m?-(1-sc)*20:0));ctx.scale(Math.max(0.04,fx)*sc,sc);
+      rr(-w/2,-h/2,w,h,12);
+      if(face){ctx.fillStyle='#fff';ctx.fill();ctx.lineWidth=4;ctx.strokeStyle=OUT;ctx.stroke();
+        ctx.font='bold '+Math.floor(Math.min(w,h)*0.62)+'px '+FONT;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#000';ctx.fillText(FACES[c.f],0,3)}
+      else{ctx.fillStyle=BACKS[g.bi%4];ctx.fill();ctx.lineWidth=4;ctx.strokeStyle=OUT;ctx.stroke();
+        ctx.fillStyle='rgba(255,255,255,0.55)';ctx.font='bold '+Math.floor(h*0.5)+'px '+FONT;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('?',0,3)}
+      ctx.restore();
+    }
+    if(g.kb&&g.t>120&&g.cards[g.cur]&&!g.cards[g.cur].m){ctx.strokeStyle='#ffffff';ctx.lineWidth=5;rr(cx(g.cur)-g.cw/2+1,cy(g.cur)-g.ch/2+1,g.cw-2,g.ch-2,14);ctx.stroke()}
+    ctx.restore();
+    mgDrawFx(g);
+    outlinedText(g.pts+'てん',90,28,24,'#fff');
+    mgTimerHUD(g,TOTAL-g.ft,730,28,true);
+    if(g.peek>0&&g.t>120)outlinedText('おぼえて！ '+Math.ceil(g.peek/60),400,62,22,'#ffd23f',OUT,5);
+    else if(g.combo>=2)outlinedText(g.combo+'れんぞく x'+Math.min(5,g.combo),400,H-22,22,'#ffd23f',OUT,5);
+    mgTitle(g);mgCountdown(g.t,'おなじ ならびを 2まい そろえよう！ はじめに ちょっとだけ みせるよ。れんぞくで ポイントアップ (キー: ◀▶▲▼ + Z)');
+    mgEndBanner(g);
+  };
+  return g;
+}
+
+/* ------------------------------------------------------------------ */
+/* 10. あいつをさがせ                                                  */
+/* ------------------------------------------------------------------ */
+function mgCreateFind(seed){
+  const TOTAL=1800,TH=[800,2000,4000];
+  const CC=['#ff8a8a','#7ad0ff','#ffe066','#9be88a','#c9a0ff','#ffb06a'];
+  const g=mgBase('あいつをさがせ',seed);
+  g.round=0;g.pts=0;g.combo=0;g.stun=0;g.chars=[];g.target=null;g.rt=0;g.limit=0;g.found=0;g.miss=0;g.px=400;g.py=270;g.kb=false;g.msgT=0;g.revT=0;
+  function accAt(x,y,r,a,t){
+    // a: 0 なし 1 リボン 2 ぼうし 3 めがね 4 おうかん
+    const hx=x,hy=y-r;
+    ctx.lineWidth=2.4;ctx.strokeStyle=OUT;
+    if(a===1){ctx.fillStyle='#ff4a7a';ctx.beginPath();ctx.moveTo(hx-r*0.1,hy-r*0.95);ctx.lineTo(hx-r*0.85,hy-r*1.35);ctx.lineTo(hx-r*0.75,hy-r*0.55);ctx.closePath();ctx.moveTo(hx+r*0.1,hy-r*0.95);ctx.lineTo(hx+r*0.85,hy-r*1.35);ctx.lineTo(hx+r*0.75,hy-r*0.55);ctx.closePath();ctx.fill();ctx.stroke()}
+    else if(a===2){ctx.fillStyle='#4a6fd8';rr(hx-r*0.55,hy-r*1.65,r*1.1,r*0.8,4);ctx.fill();ctx.stroke();rr(hx-r*0.95,hy-r*0.95,r*1.9,r*0.3,4);ctx.fill();ctx.stroke()}
+    else if(a===3){ctx.beginPath();ctx.arc(hx-r*0.33,hy-r*0.12,r*0.3,0,6.3);ctx.arc(hx+r*0.33,hy-r*0.12,r*0.3,0,6.3);ctx.moveTo(hx-r*0.03,hy-r*0.12);ctx.lineTo(hx+r*0.03,hy-r*0.12);ctx.stroke()}
+    else if(a===4){ctx.fillStyle='#ffd23f';ctx.beginPath();ctx.moveTo(hx-r*0.7,hy-r*0.9);ctx.lineTo(hx-r*0.7,hy-r*1.6);ctx.lineTo(hx-r*0.3,hy-r*1.2);ctx.lineTo(hx,hy-r*1.7);ctx.lineTo(hx+r*0.3,hy-r*1.2);ctx.lineTo(hx+r*0.7,hy-r*1.6);ctx.lineTo(hx+r*0.7,hy-r*0.9);ctx.closePath();ctx.fill();ctx.stroke()}
+  }
+  function drawChar(c,r,t){mgBlob(c.x,c.y,r,CC[c.col],t+c.ph*10,{face:c.vx>=0?1:-1,walk:t*0.6+c.ph*10});accAt(c.x,c.y,r,c.acc,t)}
+  function newRound(){
+    const r=g.round,n=Math.min(64,10+r*5),spd=0.35+Math.min(1.5,r*0.13);
+    const tc=Math.floor(g.rng()*CC.length),ta=Math.floor(g.rng()*5);
+    g.target={col:tc,acc:ta};
+    const one=Math.min(0.92,0.15+r*0.11);
+    g.chars=[];
+    const ti=Math.floor(g.rng()*n);
+    for(let i=0;i<n;i++){
+      let col,acc;
+      if(i===ti){col=tc;acc=ta}
+      else{
+        const q=g.rng();
+        if(q<one){ if(g.rng()<0.5){col=tc;acc=(ta+1+Math.floor(g.rng()*4))%5} else {acc=ta;col=(tc+1+Math.floor(g.rng()*(CC.length-1)))%CC.length} }
+        else{col=(tc+1+Math.floor(g.rng()*(CC.length-1)))%CC.length;acc=(ta+1+Math.floor(g.rng()*4))%5}
+      }
+      const a=g.rng()*6.283,s=spd*(0.6+g.rng()*0.8);
+      g.chars.push({x:50+g.rng()*700,y:150+g.rng()*260,vx:Math.cos(a)*s,vy:Math.sin(a)*s*0.7,col:col,acc:acc,ph:g.rng(),isT:i===ti});
+    }
+    g.limit=Math.max(330,720-r*40);g.rt=0;g.revT=0;
+  }
+  newRound();
+  function radius(){return g.chars.length>40?12:g.chars.length>24?13:15}
+  function tap(x,y,left){
+    if(g.stun>0||g.revT>0)return;
+    const r=radius();let best=null,bd=1e9;
+    for(const c of g.chars){const dx=x-c.x,dy=y-(c.y-r),d=dx*dx+dy*dy;if(d<(r+6)*(r+6)&&d<bd){bd=d;best=c}}
+    if(!best){g.stun=18;return}
+    if(best.isT){
+      g.combo++;const frac=1-g.rt/g.limit,m=1+Math.min(3,Math.floor(g.combo/3)),gain=Math.round((100+120*frac)*m*mgDbl(left));
+      g.pts+=gain;g.found++;g.msgT=40;
+      mgSparkles(g.parts,best.x,best.y-r,16,['#ffd23f','#fff','#7dff6a']);mgPop(g,best.x,best.y-40,'+'+gain,'#ffd23f',24);
+      mgComboSfx(g.combo);g.round++;g.revT=26;g.nextC=best;
+    }else{
+      g.combo=0;g.stun=45;g.miss++;g.shake=8;const loss=Math.min(g.pts,40);g.pts-=loss;
+      mgPop(g,best.x,best.y-40,'ちがう！ -'+loss,'#ff6a6a',20);sfx.die();
+    }
+  }
+  g.update=function(){
+    g.t++;mgFx(g);
+    if(g.done){g.endT++;return}
+    if(g.t<=120)return;
+    g.ft++;
+    const left=TOTAL-g.ft;mgTick(left);
+    if(g.stun>0)g.stun--;
+    if(g.revT>0){g.revT--;if(g.revT===0)newRound();g.live=g.pts;if(g.ft>=TOTAL)mgFinish(g,g.pts,g.pts+'てん  '+g.found+'にん みつけた！','じかんぎれ！',TH);return}
+    g.rt++;
+    for(const c of g.chars){
+      c.x+=c.vx;c.y+=c.vy;
+      if(c.x<30){c.x=30;c.vx=Math.abs(c.vx)}if(c.x>770){c.x=770;c.vx=-Math.abs(c.vx)}
+      if(c.y<150){c.y=150;c.vy=Math.abs(c.vy)}if(c.y>420){c.y=420;c.vy=-Math.abs(c.vy)}
+    }
+    if(g.rt>=g.limit){
+      g.combo=0;g.miss++;mgPop(g,400,140,'じかんぎれ… つぎ！','#ffffff',22);sfx.bump();g.round++;newRound();
+    }
+    mgMove(g,6,16,784,120,430);
+    if(mi.pl||mi.pr||mi.pu||mi.pd)g.kb=true;
+    if(mi.pa||mi.pb){g.kb=true;tap(g.px,g.py,left)}
+    else if(mi.ppress){g.kb=false;tap(mi.px,mi.py,left)}
+    g.live=g.pts;
+    if(g.ft>=TOTAL)mgFinish(g,g.pts,g.pts+'てん  '+g.found+'にん みつけた！','じかんぎれ！',TH);
+  };
+  g.draw=function(){
+    mgBg('#cfe9ff','#a8d8ff');
+    ctx.fillStyle='rgba(255,255,255,0.28)';for(let i=0;i<6;i++){mgCloud(60+i*140,330+(i%2)*40,1.0)}
+    mgShakeBegin(g);
+    const r=radius(),list=g.chars.slice().sort(function(a,b){return a.y-b.y});
+    for(const c of list){
+      if(g.revT>0&&!c.isT)ctx.globalAlpha=0.35;
+      drawChar(c,r,g.t);ctx.globalAlpha=1;
+    }
+    if(g.revT>0&&g.nextC){ctx.strokeStyle='#ffd23f';ctx.lineWidth=5;ctx.beginPath();ctx.arc(g.nextC.x,g.nextC.y-r,r+10+g.revT*0.4,0,6.3);ctx.stroke()}
+    else if(g.rt>g.limit*0.6){
+      const t=g.chars.find(function(c){return c.isT});
+      if(t){ctx.globalAlpha=0.25+0.25*Math.abs(Math.sin(g.t*0.15));ctx.strokeStyle='#ff5a7a';ctx.lineWidth=4;ctx.beginPath();ctx.arc(t.x,t.y-r,r+14,0,6.3);ctx.stroke();ctx.globalAlpha=1}
+    }
+    ctx.restore();
+    mgDrawFx(g);
+    // さがす対象
+    rr(280,38,240,64,16);ctx.fillStyle='rgba(255,255,255,0.92)';ctx.fill();ctx.lineWidth=4;ctx.strokeStyle=OUT;ctx.stroke();
+    outlinedText('この子を さがせ！',400,56,15,'#fff',OUT,4);
+    if(g.target){const tc={x:400,y:98,col:g.target.col,acc:g.target.acc,vx:1,ph:0};mgBlob(400,98,15,CC[tc.col],g.t,{walk:0});accAt(400,98,15,tc.acc,g.t)}
+    ctx.fillStyle='#7dff6a';ctx.fillRect(280,104,Math.max(0,240*(1-g.rt/g.limit)),6);
+    outlinedText(g.pts+'てん',90,28,24,'#fff');
+    mgTimerHUD(g,TOTAL-g.ft,730,28,true);
+    if(g.combo>=2)outlinedText(g.combo+'れんぞく',130,H-22,20,'#ffd23f',OUT,5);
+    if(g.stun>0&&g.t>120)outlinedText('おっと！',400,H-24,24,'#ff6a6a',OUT,5);
+    if(g.kb&&g.t>120){ctx.strokeStyle='#ff5a7a';ctx.lineWidth=3;ctx.beginPath();ctx.arc(g.px,g.py,16,0,6.3);ctx.moveTo(g.px-22,g.py);ctx.lineTo(g.px+22,g.py);ctx.moveTo(g.px,g.py-22);ctx.lineTo(g.px,g.py+22);ctx.stroke()}
+    mgTitle(g);mgCountdown(g.t,'うえに でている キャラと ぜんぶ おなじ子を タップ！ いろと かざりが おなじ子は 1にんだけ (キー: ◀▶▲▼ + Z)');
+    mgEndBanner(g);
+  };
+  return g;
+}
+
 const MINIGAMES=[
   {id:'hop',name:'ぴょんぴょんレース',desc:'おちる いたを ダッシュで わたりきれ！ ターボで がんばれ',help:'やじるしと おなじ ボタンを れんぞくで！ ギリギリで ボーナス',create:function(seed){return mgCreateHop(seed)}},
   {id:'cherry',name:'クルクルチェリー',desc:'さくらんぼを ぐるぐる まわして 2かい なげて とおくへ！',help:'ぐるぐる なぞって はなす！ おちる ときに タップで バウンス',create:function(seed){return mgCreateCherry(seed)}},
@@ -1410,5 +1632,7 @@ const MINIGAMES=[
   {id:'coin',name:'コインゲット！',desc:'アリーナの コインを あつめまくれ！ ばくだんに ちゅうい',help:'ゆびで うごいて コインを ゲット！ れんぞくで ポイントが ふえる (キー: ◀▶▲▼)',create:function(seed){return mgCreateCoin(seed)}},
   {id:'tap',name:'リズムタップ',desc:'おちてくる おとを タイミングよく タップ！',help:'おとが せんに かさなったら そのレーンを タップ！ (キー: ◀▼▲▶)',create:function(seed){return mgCreateTap(seed)}},
   {id:'stack',name:'ぐらぐらスタック',desc:'ゆれる ブロックを ぴったり つみあげろ！',help:'タップで おとす！ ぴったりで れんぞくボーナス、はずすと くずれる',create:function(seed){return mgCreateStack(seed)}},
-  {id:'whack',name:'ぽこぽこモグラ',desc:'でてくる モグラを たたけ！ キラキラは ボーナス',help:'モグラを タップ！ × の モグラは たたかない (キー: ◀▶▲▼ + Z)',create:function(seed){return mgCreateWhack(seed)}}
+  {id:'whack',name:'ぽこぽこモグラ',desc:'でてくる モグラを たたけ！ キラキラは ボーナス',help:'モグラを タップ！ × の モグラは たたかない (キー: ◀▶▲▼ + Z)',create:function(seed){return mgCreateWhack(seed)}},
+  {id:'memory',name:'しんけいすいじゃく',desc:'おなじ カードを 2まい そろえよう！ れんぞくで ポイントアップ',help:'おなじ ならびを 2まい そろえよう！ はじめに ちょっとだけ みせるよ (キー: ◀▶▲▼ + Z)',create:function(seed){return mgCreateMemory(seed)}},
+  {id:'find',name:'あいつをさがせ',desc:'たくさんの なかから おなじ子を 1にん みつけだせ！',help:'うえに でている キャラと ぜんぶ おなじ子を タップ！ (キー: ◀▶▲▼ + Z)',create:function(seed){return mgCreateFind(seed)}}
 ];

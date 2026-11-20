@@ -215,9 +215,9 @@ cv.addEventListener('pointerdown',e=>{
     return;
   }
   if(state==='mini'){
-    if(py>=384&&py<=428&&px>=250&&px<=550){state='net';netSel=0;netMsg='';return}
-    for(let i=0;i<MINIGAMES.length;i++){const x=20+(i%4)*195,y=92+Math.floor(i/4)*148;
-      if(px>=x&&px<=x+183&&py>=y&&py<=y+136){mSel=i;startMini(i);return}}
+    if(py>=392&&py<=430&&px>=250&&px<=550){state='net';netSel=0;netMsg='';return}
+    for(let i=0;i<MINIGAMES.length;i++){const x=20+(i%4)*195,y=76+Math.floor(i/4)*106;
+      if(px>=x&&px<=x+183&&py>=y&&py<=y+100){mSel=i;startMini(i);return}}
     if(px<110&&py<44)leaveMini('select');
     return;
   }
@@ -1283,20 +1283,20 @@ function drawMiniMenu(){
   outlinedText('ミニゲーム',W/2,46,34,'#fff','#e8344e',8);
   outlinedText('◀ もどる',55,24,14,'#fff',OUT,4);
   MINIGAMES.forEach((g,i)=>{
-    const x=20+(i%4)*195,y=92+Math.floor(i/4)*148,w=183,h=136,sel=i===mSel;
+    const x=20+(i%4)*195,y=76+Math.floor(i/4)*106,w=183,h=100,sel=i===mSel;
     const bob=sel?Math.sin(frame*.15)*3:0;
     ctx.save();ctx.translate(0,bob);
     ctx.fillStyle=['#ffe08a','#ffb6dd','#a8e6ff','#c4f1a8'][i%4];rr(x,y,w,h,14);ctx.fill();
     ctx.strokeStyle=sel?'#ff5a7a':OUT;ctx.lineWidth=sel?6:3;ctx.stroke();
-    const nm=g.name.length>9?15:g.name.length>7?18:21;
-    outlinedText(g.name,x+w/2,y+26,nm,'#fff',OUT,5);
-    wrapJP(g.desc||'',13).slice(0,3).forEach((l,k)=>outlinedText(l,x+w/2,y+54+k*16,12,'#fff',OUT,3));
+    const nm=g.name.length>9?14:g.name.length>7?16:19;
+    outlinedText(g.name,x+w/2,y+19,nm,'#fff',OUT,5);
+    wrapJP(g.desc||'',15).slice(0,3).forEach((l,k)=>outlinedText(l,x+w/2,y+42+k*14,11,'#fff',OUT,3));
     const best=prog.mini[g.id];
-    outlinedText(best?`ベスト ${best}てん`:'まだ あそんでないよ',x+w/2,y+120,14,best?'#ffe45c':'#fff',OUT,4);
+    outlinedText(best?`ベスト ${best}てん`:'まだ あそんでないよ',x+w/2,y+88,13,best?'#ffe45c':'#fff',OUT,4);
     ctx.restore();
   });
-  ctx.fillStyle='#ff8aa8';rr(250,388,300,40,20);ctx.fill();ctx.strokeStyle=OUT;ctx.lineWidth=3;ctx.stroke();
-  outlinedText('みんなで あそぶ (ルーム) R',W/2,409,17,'#fff',OUT,5);
+  ctx.fillStyle='#ff8aa8';rr(250,394,300,34,17);ctx.fill();ctx.strokeStyle=OUT;ctx.lineWidth=3;ctx.stroke();
+  outlinedText('みんなで あそぶ (ルーム) R',W/2,412,16,'#fff',OUT,5);
   outlinedText('← → ↑ ↓ えらぶ  Enter / タップ あそぶ  Esc もどる',W/2,440,11,'#fff',OUT,3);
 }
 function netBg(title){
