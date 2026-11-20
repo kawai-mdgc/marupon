@@ -4,7 +4,7 @@
 // ------------------------------------------------------------
 //  { name:'8もじまで', theme:'grass', build(L){ ... } }
 //
-//  theme : grass desert snow night sunset cave candy   (ゆかの色・空・氷など)
+//  theme : grass desert snow night sunset cave candy forest volcano   (ゆかの色・空・氷など)
 //
 //  L は「左から右へ 1 パーツずつ並べる」ためのペン。
 //  パーツを置くたびに L.s (そのパーツの左端) が決まり、
@@ -28,7 +28,7 @@
 //   L.drop(dx,y)       のると落ちる足場
 //  L.check(dx)  チェックポイントの旗
 //
-//  むずかしさの目安: ステージ1=はじめて … ステージ10=ラスボス級
+//  むずかしさの目安: ステージ1=はじめて … 10=中ボス … 20=ラスボス
 // ============================================================
 const STAGES=[
  // 1 ------------------------------------------------ はじめて
@@ -190,5 +190,132 @@ const STAGES=[
   L.gap(10); L.drop(1,11); L.drop(4,10); L.drop(7,11);
   L.flat(14); L.walker(5); L.hopper(9); L.flyer(12,8,3);
   L.finish(6);
+ }},
+ // 11 ----------------------------------------------- 20ステージ編はここから
+ {name:'もりのいりぐち',theme:'forest',build(L){
+  L.flat(10); L.walker(7); L.row(3,8,'?M?');
+  L.flat(14); L.hopper(7); L.walker(12); L.spikes(3,2);
+  L.gap(4); L.plat(1,10,1);
+  L.flat(14); L.check(1); L.flyer(6,8,3); L.spike(10);
+  L.gap(5); L.plat(1,10,1); L.plat(3,9,1);
+  L.flat(16); L.row(3,8,'BSB'); L.hopper(8); L.thwomp(12); L.walker(14);
+  L.gap(5); L.arc(0,8,5);
+  L.flat(12); L.walker(6);
+  L.finish(5);
+ }},
+ // 12
+ {name:'ふくろうのおか',theme:'grass',build(L){
+  L.flat(10); L.hopper(6);
+  L.flat(14); L.row(2,8,'?U?'); L.walker(7); L.spikes(9,3);
+  L.gap(5); L.plat(1,10,1); L.plat(3,10,1);
+  L.flat(14); L.check(1); L.hopper(6); L.hopper(11); L.flyer(8,7,3);
+  L.gap(9); L.liftH(10,.05);
+  L.flat(16); L.thwomp(4); L.spikes(8,2); L.walker(12); L.row(13,8,'M');
+  L.gap(6); L.plat(1,10,1); L.plat(4,9,1);
+  L.flat(14); L.hopper(5); L.walker(9); L.spike(11);
+  L.finish(6);
+ }},
+ // 13
+ {name:'さばくのよる',theme:'desert',build(L){
+  L.flat(12); L.walker(6); L.hopper(9);
+  L.flat(14); L.spikes(3,3); L.hopper(9); L.walker(12);
+  L.gap(5); L.plat(1,10,1); L.plat(3,9,1);
+  L.flat(14); L.check(1); L.thwomp(4); L.thwomp(9); L.walker(12);
+  L.gap(8); L.liftV(2,10,1.8,.05);
+  L.flat(16); L.row(2,8,'?M?'); L.hopper(7); L.spike(10); L.spikes(12,2);
+  L.gap(6); L.drop(1,11); L.drop(4,10);
+  L.flat(16); L.flyer(4,8,4); L.hopper(8); L.thwomp(12);
+  L.finish(6);
+ }},
+ // 14
+ {name:'こおりのどうくつ',theme:'snow',build(L){
+  L.flat(12); L.walker(6); L.flyer(9,8,3);
+  L.flat(16); L.spikes(5,3); L.hopper(11); L.walker(14);
+  L.gap(5); L.plat(1,10,1); L.plat(3,10,1);
+  L.flat(16); L.check(1); L.hopper(5); L.hopper(10); L.flyer(7,7,3); L.row(12,8,'S');
+  L.gap(9); L.liftH(10,.05); L.flyer(3,7,3);
+  L.flat(14); L.thwomp(4); L.spike(8); L.walker(11);
+  L.gap(7); L.drop(1,11); L.drop(4,11);
+  L.flat(16); L.spikes(4,3); L.flyer(9,8,3); L.hopper(13);
+  L.finish(6);
+ }},
+ // 15
+ {name:'かざんのふもと',theme:'volcano',build(L){
+  L.flat(12); L.hopper(6); L.walker(9);
+  L.flat(16); L.spikes(3,3); L.spikes(9,3); L.arc(3,7,4); L.arc(9,7,4);
+  L.gap(5); L.plat(1,10,1); L.plat(3,9,1);
+  L.flat(14); L.check(1); L.thwomp(4); L.hopper(8); L.thwomp(12);
+  L.gap(9); L.liftH(11,.055); L.flyer(4,7,3);
+  L.flat(16); L.row(2,8,'BMB'); L.hopper(7); L.spike(10); L.walker(13);
+  L.gap(8); L.drop(1,11); L.drop(4,10); L.drop(7,11);
+  L.flat(14); L.walker(5); L.hopper(9);
+  L.finish(6);
+ }},
+ // 16
+ {name:'ほしぞらのみち',theme:'night',build(L){
+  L.flat(10); L.flyer(5,8,3);
+  L.gap(9); L.liftH(10,.05); L.flyer(3,7,3);
+  L.flat(16); L.check(1); L.hopper(5); L.hopper(9); L.flyer(12,8,3);
+  L.gap(8); L.drop(1,11); L.drop(4,10);
+  L.flat(16); L.spikes(4,3); L.thwomp(9); L.hopper(13);
+  L.gap(9); L.liftV(2,10,1.8,.055);
+  L.flat(16); L.check(1); L.thwomp(3); L.flyer(7,8,4); L.walker(11); L.row(13,8,'U');
+  L.gap(10); L.drop(1,11); L.drop(4,10); L.drop(7,11);
+  L.flat(14); L.hopper(5); L.hopper(10);
+  L.finish(6);
+ }},
+ // 17
+ {name:'ゆうやけのはし',theme:'sunset',build(L){
+  L.flat(12); L.hopper(6); L.walker(9);
+  L.gap(6); L.plat(1,10,1); L.plat(4,9,1);
+  L.flat(14); L.spikes(3,3); L.hopper(9); L.flyer(12,8,3);
+  L.gap(7); L.drop(1,11); L.drop(4,11);
+  L.flat(16); L.check(1); L.thwomp(4); L.spikes(7,3); L.thwomp(13);
+  L.gap(10); L.liftH(11,.06); L.flyer(4,7,3);
+  L.flat(16); L.hopper(5); L.spike(9); L.hopper(13); L.row(2,8,'M');
+  L.gap(5); L.arc(0,8,5);
+  L.flat(14); L.walker(5); L.flyer(9,8,3);
+  L.finish(6);
+ }},
+ // 18
+ {name:'ふかいどうくつ',theme:'cave',build(L){
+  L.flat(12); L.hopper(6); L.spike(9);
+  L.flat(16); L.spikes(3,3); L.spikes(9,3); L.walker(13);
+  L.gap(5); L.plat(1,10,1); L.plat(3,9,1);
+  L.flat(14); L.check(1); L.thwomp(3); L.thwomp(7); L.thwomp(11);
+  L.gap(9); L.liftV(2,10,1.9,.055);
+  L.flat(16); L.hopper(4); L.hopper(8); L.spikes(11,3);
+  L.gap(8); L.drop(1,11); L.drop(4,10); L.drop(7,11);
+  L.flat(16); L.check(1); L.spike(4); L.spike(6); L.thwomp(10); L.hopper(13);
+  L.finish(6);
+ }},
+ // 19
+ {name:'おかしのしろ',theme:'candy',build(L){
+  L.flat(12); L.hopper(6); L.flyer(9,8,3);
+  L.gap(6); L.plat(1,10,1); L.plat(4,10,1);
+  L.flat(16); L.spikes(3,3); L.hopper(9); L.thwomp(13);
+  L.gap(9); L.liftH(10,.06); L.flyer(3,7,3);
+  L.flat(16); L.check(1); L.hopper(5); L.spikes(8,3); L.hopper(13);
+  L.gap(10); L.drop(1,11); L.drop(4,10); L.drop(7,11);
+  L.flat(16); L.thwomp(4); L.spike(8); L.thwomp(11); L.row(13,8,'S');
+  L.gap(9); L.liftV(2,10,1.9,.06); L.flyer(6,7,3);
+  L.flat(14); L.hopper(5); L.hopper(9);
+  L.finish(6);
+ }},
+ // 20 ----------------------------------------------- ラスボス
+ {name:'まおうのおしろ',theme:'volcano',build(L){
+  L.flat(10); L.walker(6); L.row(3,8,'?M?');
+  L.flat(16); L.hopper(5); L.spikes(8,3); L.hopper(13);
+  L.gap(5); L.plat(1,10,1); L.plat(3,9,1);
+  L.flat(16); L.check(1); L.thwomp(4); L.spikes(7,3); L.thwomp(13);
+  L.gap(9); L.liftH(10,.06); L.flyer(3,7,3);
+  L.flat(18); L.hopper(4); L.hopper(8); L.spikes(11,3); L.flyer(16,8,3); L.row(2,8,'U');
+  L.gap(10); L.drop(1,11); L.drop(4,10); L.drop(7,11);
+  L.flat(18); L.check(1); L.thwomp(4); L.spike(8); L.thwomp(11); L.hopper(15);
+  L.gap(10); L.liftV(2,10,2,.06); L.flyer(6,7,3);
+  L.flat(18); L.spikes(4,3); L.spikes(10,3); L.hopper(15); L.row(7,8,'S');
+  L.gap(6); L.plat(1,10,1); L.plat(4,9,1);
+  L.flat(16); L.hopper(5); L.flyer(8,8,3); L.thwomp(12);
+  L.finish(7);
  }},
 ];

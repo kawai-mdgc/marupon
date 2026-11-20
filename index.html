@@ -132,6 +132,8 @@ const THEMES={
   sunset:{sky:['#ff8a6b','#ffc27a','#ffe9b8'],sun:'#fff0a0',cloud:'#ffd8bc',cloud2:'#f3b99a',hill:['#d96a7a','#c25a73'],hillDot:'#a84a62',dirt:'#a05a4a',dirt2:'#864838',top:'#9bd05a',top2:'#c0e87a'},
   cave  :{sky:['#2a2438','#3d3350','#54476a'],sun:null,cloud:null,cave:true,hill:['#4a3f5e','#40364f'],hillDot:'#5a4e70',dirt:'#6e6478',dirt2:'#5c5266',top:'#8a7fa0',top2:'#a99dc0'},
   candy :{sky:['#ffa6d5','#ffd0ea','#fff0f8'],sun:'#fff6b0',cloud:'#fff',cloud2:'#ffe0f0',hill:['#ffb6dd','#ff9fd0'],hillDot:'#ff7fc0',dirt:'#ff9ac0',dirt2:'#ff7fb0',top:'#8be3ff',top2:'#c4f1ff'},
+  forest:{sky:['#4fa88a','#8fd0a8','#d4f2d8'],sun:'#fff6b0',cloud:'#e8fff0',cloud2:'#bfe6cc',hill:['#3f9a62','#2f8452'],hillDot:'#256f43',dirt:'#7a5a3a',dirt2:'#654a2e',top:'#3fb85a',top2:'#6fdc7a'},
+  volcano:{sky:['#3a1218','#7a2a22','#c85a32'],sun:'#ffd070',stars:true,cloud:'#8a4a40',cloud2:'#6e3a34',hill:['#5a2a2e','#4a2226'],hillDot:'#7a3a36',dirt:'#4a3238',dirt2:'#3a262c',top:'#ff8a3a',top2:'#ffc060'},
 };
 let TH=THEMES.grass;
 
@@ -326,7 +328,7 @@ function update(){
   }
   if(state==='over'){
     updateParticles();
-    if(keys.jumpPressed&&frame>20){lives=3;loadLevel();state='play';sfx.coin()}
+    if(keys.jumpPressed&&frame>20){lives=5;checkX=null;checkPow=0;loadLevel();bannerT=150;state='play';sfx.coin()}
     keys.jumpPressed=0;keys.firePressed=0; return;
   }
   if(state==='clear'){
@@ -369,7 +371,7 @@ function updatePlayer(){
     p.deadT++;
     if(p.deadT>18){p.vy+=.5;p.y+=p.vy;}
     p.rot+=.15;
-    if(p.deadT>110){ if(lives<=0){state='over';frame=0;} else loadLevel(); }
+    if(p.deadT>110){ if(lives<=0){state='over';frame=0;checkX=null;checkPow=0;prog.stage=null;prog.checkX=null;prog.pow=0;saveProg();} else loadLevel(); }
     return;
   }
   if(p.win){
@@ -901,7 +903,8 @@ function draw(){
     ctx.fillStyle='rgba(20,10,40,.6)';ctx.fillRect(0,0,W,H);
     outlinedText('ゲームオーバー',W/2,160,52,'#ff8aa8');
     outlinedText(`ステージ ${curStage}   スコア ${score}`,W/2,230,24,'#fff');
-    if(frame%60<40)outlinedText(checkX!==null?'Enter / タップ で チェックポイントから つづける':'Enter / タップ で もういちど',W/2,300,22,'#fff');
+    if(frame%60<40)outlinedText('5きとも やられたので チェックポイントは むこう!',W/2,282,18,'#ffd9e6');
+    outlinedText('Enter / タップ で ステージのさいしょから',W/2,314,22,'#fff');
     outlinedText('Esc で ステージえらび',W/2,350,16,'#fff',OUT,4);
   }else if(state==='clear'){
     ctx.fillStyle='rgba(255,255,255,.25)';ctx.fillRect(0,0,W,H);
