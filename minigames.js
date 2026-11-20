@@ -1533,10 +1533,10 @@ function mgCreateMemory(seed){
 /* 10. あいつをさがせ                                                  */
 /* ------------------------------------------------------------------ */
 function mgCreateFind(seed){
-  const TOTAL=3000,TH=[1360,3400,6800];
+  const TOTAL=3000,TH=[2500,6000,12000];
   const CC=['#ff8a8a','#7ad0ff','#ffe066','#9be88a','#c9a0ff','#ffb06a'];
   const g=mgBase('あいつをさがせ',seed);
-  g.round=0;g.pts=0;g.combo=0;g.stun=0;g.chars=[];g.target=null;g.rt=0;g.limit=0;g.found=0;g.miss=0;g.px=400;g.py=270;g.kb=false;g.msgT=0;g.revT=0;
+  g.left=1800;g.round=0;g.pts=0;g.combo=0;g.stun=0;g.chars=[];g.target=null;g.rt=0;g.limit=0;g.found=0;g.miss=0;g.px=400;g.py=270;g.kb=false;g.msgT=0;g.revT=0;
   function accAt(x,y,r,a,t){
     // a: 0 なし 1 リボン 2 ぼうし 3 めがね 4 おうかん
     const hx=x,hy=y-r;
@@ -1575,38 +1575,35 @@ function mgCreateFind(seed){
     for(const c of g.chars){const dx=x-c.x,dy=y-(c.y-r),d=dx*dx+dy*dy;if(d<(r+6)*(r+6)&&d<bd){bd=d;best=c}}
     if(!best){g.stun=18;return}
     if(best.isT){
-      g.combo++;const frac=1-g.rt/g.limit,m=1+Math.min(3,Math.floor(g.combo/3)),gain=Math.round((100+120*frac)*m*mgDbl(left));
+      g.combo++;const add=Math.max(120,300-g.round*12);g.left=Math.min(2700,g.left+add);mgPop(g,400,150,'じかん +'+(add/60).toFixed(0)+'びょう','#7dff6a',22);const frac=Math.max(0,1-g.rt/g.limit),m=1+Math.min(3,Math.floor(g.combo/3)),gain=Math.round((100+120*frac)*m*mgDbl(left));
       g.pts+=gain;g.found++;g.msgT=40;
       mgSparkles(g.parts,best.x,best.y-r,16,['#ffd23f','#fff','#7dff6a']);mgPop(g,best.x,best.y-40,'+'+gain,'#ffd23f',24);
       mgComboSfx(g.combo);g.round++;g.revT=26;g.nextC=best;
     }else{
-      g.combo=0;g.stun=45;g.miss++;g.shake=8;const loss=Math.min(g.pts,40);g.pts-=loss;
-      mgPop(g,best.x,best.y-40,'ちがう！ -'+loss,'#ff6a6a',20);sfx.die();
+      g.combo=0;g.stun=45;g.miss++;g.shake=8;g.left=Math.max(0,g.left-180);const loss=Math.min(g.pts,40);g.pts-=loss;
+      mgPop(g,best.x,best.y-40,'ちがう！ -3びょう','#ff6a6a',20);sfx.die();
     }
   }
   g.update=function(){
     g.t++;mgFx(g);
     if(g.done){g.endT++;return}
     if(g.t<=MG_CD)return;
-    g.ft++;
-    const left=TOTAL-g.ft;mgTick(left);
+    g.ft++;g.left--;
+    const left=g.left;mgTick(left);
     if(g.stun>0)g.stun--;
-    if(g.revT>0){g.revT--;if(g.revT===0)newRound();g.live=g.pts;if(g.ft>=TOTAL)mgFinish(g,g.pts,g.pts+'てん  '+g.found+'にん みつけた！','じかんぎれ！',TH);return}
+    if(g.revT>0){g.revT--;if(g.revT===0)newRound();g.live=g.pts;if(g.left<=0)mgFinish(g,g.pts,g.pts+'てん  '+g.found+'にん みつけた！','じかんぎれ！',TH);return}
     g.rt++;
     for(const c of g.chars){
       c.x+=c.vx;c.y+=c.vy;
       if(c.x<30){c.x=30;c.vx=Math.abs(c.vx)}if(c.x>770){c.x=770;c.vx=-Math.abs(c.vx)}
       if(c.y<150){c.y=150;c.vy=Math.abs(c.vy)}if(c.y>420){c.y=420;c.vy=-Math.abs(c.vy)}
     }
-    if(g.rt>=g.limit){
-      g.combo=0;g.miss++;mgPop(g,400,140,'じかんぎれ… つぎ！','#ffffff',22);sfx.bump();g.round++;newRound();
-    }
     mgMove(g,6,16,784,120,430);
     if(mi.pl||mi.pr||mi.pu||mi.pd)g.kb=true;
     if(mi.pa||mi.pb){g.kb=true;tap(g.px,g.py,left)}
     else if(mi.ppress){g.kb=false;tap(mi.px,mi.py,left)}
     g.live=g.pts;
-    if(g.ft>=TOTAL)mgFinish(g,g.pts,g.pts+'てん  '+g.found+'にん みつけた！','じかんぎれ！',TH);
+    if(g.left<=0||g.ft>=7200)mgFinish(g,g.pts,g.pts+'てん  '+g.found+'にん みつけた！','じかんぎれ！',TH);
   };
   g.draw=function(){
     mgBg('#cfe9ff','#a8d8ff');
@@ -1628,13 +1625,13 @@ function mgCreateFind(seed){
     rr(280,38,240,64,16);ctx.fillStyle='rgba(255,255,255,0.92)';ctx.fill();ctx.lineWidth=4;ctx.strokeStyle=OUT;ctx.stroke();
     outlinedText('この子を さがせ！',400,56,15,'#fff',OUT,4);
     if(g.target){const tc={x:400,y:98,col:g.target.col,acc:g.target.acc,vx:1,ph:0};mgBlob(400,98,15,CC[tc.col],g.t,{walk:0});accAt(400,98,15,tc.acc,g.t)}
-    ctx.fillStyle='#7dff6a';ctx.fillRect(280,104,Math.max(0,240*(1-g.rt/g.limit)),6);
+    ctx.fillStyle=g.left<=300?'#ff5a5a':'#7dff6a';ctx.fillRect(280,104,Math.max(0,240*g.left/2700),6);
     outlinedText(g.pts+'てん',90,28,24,'#fff');
-    mgTimerHUD(g,TOTAL-g.ft,730,28,true);
+    mgTimerHUD(g,g.left,730,28,true);
     if(g.combo>=2)outlinedText(g.combo+'れんぞく',130,H-22,20,'#ffd23f',OUT,5);
     if(g.stun>0&&g.t>MG_CD)outlinedText('おっと！',400,H-24,24,'#ff6a6a',OUT,5);
     if(g.kb&&g.t>MG_CD){ctx.strokeStyle='#ff5a7a';ctx.lineWidth=3;ctx.beginPath();ctx.arc(g.px,g.py,16,0,6.3);ctx.moveTo(g.px-22,g.py);ctx.lineTo(g.px+22,g.py);ctx.moveTo(g.px,g.py-22);ctx.lineTo(g.px,g.py+22);ctx.stroke()}
-    mgTitle(g);mgCountdown(g.t,'うえに でている キャラと ぜんぶ おなじ子を タップ！ いろと かざりが おなじ子は 1にんだけ (キー: ◀▶▲▼ + Z)');
+    mgTitle(g);mgCountdown(g.t,'うえに でている キャラと ぜんぶ おなじ子を タップ！ みつけると じかんが ふえるよ(だんだん すこしに)。まちがえると 3びょう へる (キー: ◀▶▲▼ + Z)');
     mgEndBanner(g);
   };
   return g;
@@ -1650,5 +1647,5 @@ const MINIGAMES=[
   {id:'stack',name:'ぐらぐらスタック',desc:'ゆれる ブロックを ぴったり つみあげろ！',help:'タップで おとす！ ぴったりで れんぞくボーナス、はずすと くずれる',create:function(seed){return mgCreateStack(seed)}},
   {id:'whack',name:'ぽこぽこモグラ',desc:'でてくる モグラを たたけ！ キラキラは ボーナス',help:'モグラを タップ！ × の モグラは たたかない (キー: ◀▶▲▼ + Z)',create:function(seed){return mgCreateWhack(seed)}},
   {id:'memory',name:'しんけいすいじゃく',desc:'おなじ カードを 2まい そろえよう！ れんぞくで ポイントアップ',help:'おなじ ならびを 2まい そろえよう！ はじめに ちょっとだけ みせるよ (キー: ◀▶▲▼ + Z)',create:function(seed){return mgCreateMemory(seed)}},
-  {id:'find',name:'あいつをさがせ',desc:'たくさんの なかから おなじ子を 1にん みつけだせ！',help:'うえに でている キャラと ぜんぶ おなじ子を タップ！ (キー: ◀▶▲▼ + Z)',create:function(seed){return mgCreateFind(seed)}}
+  {id:'find',name:'あいつをさがせ',desc:'みつけるたびに じかんが ふえる！ じかんが 0で おわり',help:'うえに でている キャラと ぜんぶ おなじ子を タップ！ みつけると じかんが ふえる (キー: ◀▶▲▼ + Z)',create:function(seed){return mgCreateFind(seed)}}
 ];
