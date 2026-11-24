@@ -16,7 +16,7 @@ const Net=(()=>{
 
   const emit=(k,a,b)=>{try{S.on[k]&&S.on[k](a,b)}catch(e){}};
   const mkCode=()=>{let c='';for(let i=0;i<4;i++)c+=CODE_CHARS[Math.floor(Math.random()*CODE_CHARS.length)];return c};
-  const pub=()=>S.players.map(p=>({id:p.id,name:p.name,color:p.color,live:p.live,done:p.done,score:p.score,text:p.text,host:p.host}));
+  const pub=()=>S.players.map(p=>({id:p.id,name:p.name,color:p.color,live:p.live,done:p.done,score:p.score,text:p.text,host:p.host,away:!!p.away}));
   const sendTo=(c,m)=>{try{c.open!==false&&c.send(m)}catch(e){}};
   const bcast=m=>{for(const c of conns)sendTo(c,m)};
   function newPlayer(id,host){
@@ -54,6 +54,7 @@ const Net=(()=>{
       c.on('data',m=>{
         if(!m||typeof m!=='object')return;
         const p=S.players.find(p=>p.id===c.peer);if(!p)return;
+        if(m.t==='pres'){p.away=!!m.away;dirty=true;return}
         if(m.t==='live'){
           p.live=+m.live||0;if(m.done){p.done=true;p.score=Math.max(0,Math.floor(+m.score||0));p.text=String(m.text||'').slice(0,24)}
           dirty=true;checkAllDone();
@@ -124,6 +125,11 @@ const Net=(()=>{
       }else if(conns[0]&&(done||tickN%6===0)){sendTo(conns[0],{t:'live',live,done:!!done,score,text})}
     },
     tick(){tickN++;if(S.isHost&&(dirty&&tickN%5===0||tickN%30===0)&&S.status==='lobby')broadcastState()},
+    setAway(v){
+      const me=S.players.find(p=>p.id===S.meId);
+      if(S.isHost){if(me){me.away=!!v;dirty=true}}
+      else if(conns[0])sendTo(conns[0],{t:'pres',away:!!v});
+    },
     me(){return S.players.find(p=>p.id===S.meId)||null},
     others(){return S.players.filter(p=>p.id!==S.meId)},
     ranking(){return S.players.slice().sort((a,b)=>b.score-a.score)},
