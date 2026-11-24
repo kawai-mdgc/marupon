@@ -177,7 +177,7 @@ addEventListener('keydown',e=>{
 });
 addEventListener('keyup',e=>{const k=KMAP[e.code];if(k)release(k);});
 addEventListener('blur',()=>{keys.left=keys.right=keys.jump=keys.run=keys.fire=keys.down=0;pauseGame()});
-if(document.addEventListener)document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseGame();try{if(netOn)Net.setAway(document.hidden)}catch(e){}});
+if(document.addEventListener)document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseGame();});
 // touch
 function bindBtn(id,k){
   const el=document.getElementById(id);
@@ -1451,20 +1451,7 @@ function drawSelect(){
   outlinedText('← → ↑ ↓ えらぶ   Enter / タップ あそぶ   Esc もどる',W/2,pages>1?432:420,13,'#fff',OUT,3);
 }
 
-function drawPresence(){
-  // オンライン中: いま ルームに いる人(ブラウザを ひらいている人)を 右のはしに ならべる
-  ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';
-  Net.S.players.forEach((p,i)=>{
-    const x=W-18,y=214+i*30,me=p.id===Net.S.meId;
-    ctx.globalAlpha=p.away?.45:.95;
-    ctx.fillStyle=p.away?'#b8b8c8':p.color;ctx.beginPath();ctx.arc(x,y,12,0,7);ctx.fill();
-    ctx.lineWidth=me?4:2.5;ctx.strokeStyle=me?'#ffffff':OUT;ctx.stroke();
-    ctx.globalAlpha=1;ctx.font=`bold 12px ${FONT}`;ctx.fillStyle=p.away?'#555':'#fff';ctx.strokeStyle=OUT;ctx.lineWidth=2.5;
-    const ch=p.away?'z':(p.name||'?')[0];ctx.strokeText(ch,x,y+1);ctx.fillText(ch,x,y+1);
-  });
-  ctx.restore();
-}
-function draw(){drawMain();if(netOn&&Net.S.status==='lobby'&&Net.S.players.length)drawPresence()}
+function draw(){drawMain()}
 function drawMain(){
   ctx.setTransform(DPR,0,0,DPR,0,0);
   if(state==='mini'){drawMiniMenu();return}
